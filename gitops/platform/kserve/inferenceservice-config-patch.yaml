@@ -11,7 +11,9 @@ data:
   ingress: |-
     {
       "enableGatewayApi": false,
-      "ingressClassName": "",
+      "kserveIngressGateway": "kserve/kserve-ingress-gateway",
+      "ingressGateway": "kserve/kserve-ingress-gateway",
+      "ingressClassName": "istio",
       "disableIngressCreation": true,
       "ingressDomain": "cluster.local",
       "urlScheme": "http"
