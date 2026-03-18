@@ -3,15 +3,23 @@ kind: InferenceService
 metadata:
   name: qwen35-27b-gptq-int4
   namespace: llm
+  annotations:
+    serving.kserve.io/deploymentMode: Standard
 spec:
   predictor:
-    serviceAccountName: llm-model-sa
     minReplicas: 1
+    serviceAccountName: llm-model-sa
+    nodeSelector:
+      node-role.kubernetes.io/gpu: ""
+    tolerations:
+      - key: nvidia.com/gpu
+        operator: Equal
+        value: "true"
+        effect: NoSchedule
     model:
       modelFormat:
-        name: openai
-      runtime: vllm-runtime
-      storageUri: s3://REPLACE_S3_BUCKET/REPLACE_S3_PREFIX/
+        name: huggingface
+      storageUri: s3://llm/models/qwen3.5-27b-gptq-int4/
       resources:
         limits:
           nvidia.com/gpu: "1"
@@ -20,3 +28,10 @@ spec:
         requests:
           cpu: "4"
           memory: "24Gi"
+      args:
+        - --backend=vllm
+        - --model_name=qwen35-27b-gptq-int4
+        - --quantization=gptq
+        - --max_model_len=4096
+        - --gpu_memory_utilization=0.92
+        - --enforce_eager

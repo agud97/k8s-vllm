@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: platform-cert-manager
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "12"
+spec:
+  project: platform
+  source:
+    repoURL: https://github.com/agud97/k8s-vllm.git
+    targetRevision: main
+    path: gitops/platform/cert-manager
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cert-manager
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true

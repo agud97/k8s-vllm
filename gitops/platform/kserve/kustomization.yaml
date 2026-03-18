@@ -2,5 +2,44 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - namespace.yaml
-  - runtime-serviceaccount.yaml
-  - cluster-serving-runtime.yaml
+  - upstream/kserve.yaml
+  - upstream/kserve-cluster-resources.yaml
+patches:
+  - target:
+      version: v1
+      kind: ConfigMap
+      name: inferenceservice-config
+      namespace: kserve
+    path: inferenceservice-config-patch.yaml
+  - target:
+      kind: Deployment
+      namespace: kserve
+      labelSelector: app.kubernetes.io/name=kserve
+    patch: |-
+      - op: add
+        path: /spec/template/spec/nodeSelector
+        value:
+          node-role.kubernetes.io/infra: ""
+      - op: add
+        path: /spec/template/spec/tolerations
+        value:
+          - key: node-role.kubernetes.io/infra
+            operator: Equal
+            value: "true"
+            effect: NoSchedule
+  - target:
+      kind: DaemonSet
+      namespace: kserve
+      labelSelector: app.kubernetes.io/name=kserve
+    patch: |-
+      - op: add
+        path: /spec/template/spec/nodeSelector
+        value:
+          node-role.kubernetes.io/infra: ""
+      - op: add
+        path: /spec/template/spec/tolerations
+        value:
+          - key: node-role.kubernetes.io/infra
+            operator: Equal
+            value: "true"
+            effect: NoSchedule
