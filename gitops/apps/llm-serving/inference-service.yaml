@@ -19,6 +19,7 @@ spec:
     model:
       modelFormat:
         name: huggingface
+      runtime: kserve-huggingfaceserver-gpu
       storageUri: s3://llm/models/qwen3.5-27b-gptq-int4/
       resources:
         limits:

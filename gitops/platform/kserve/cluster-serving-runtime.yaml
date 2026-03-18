@@ -1,26 +1,23 @@
 apiVersion: serving.kserve.io/v1alpha1
 kind: ClusterServingRuntime
 metadata:
-  name: vllm-runtime
+  name: kserve-huggingfaceserver-gpu
 spec:
   supportedModelFormats:
-    - name: openai
+    - name: huggingface
       version: "1"
       autoSelect: true
   containers:
     - name: kserve-container
-      image: vllm/vllm-openai:v0.17.1
+      image: kserve/huggingfaceserver:v0.17.0-gpu
       args:
-        - "--port=8080"
-        - "--served-model-name=$(MODEL_ALIAS)"
-        - "--model=$(MODEL_PATH)"
+        - --model_name={{.Name}}
+        - --model_dir=/mnt/models
+        - --backend=vllm
+        - --http_port=8080
       env:
-        - name: MODEL_ALIAS
-          value: qwen35-27b-gptq-int4
-        - name: MODEL_PATH
-          value: /mnt/models
-      ports:
-        - containerPort: 8080
+        - name: KSERVE_OPENAI_ROUTE_PREFIX
+          value: openai
       resources:
         requests:
           cpu: "4"
@@ -32,6 +29,10 @@ spec:
       volumeMounts:
         - name: model-cache
           mountPath: /mnt/models
+        - name: devshm
+          mountPath: /dev/shm
+      ports:
+        - containerPort: 8080
   nodeSelector:
     node-role.kubernetes.io/gpu: ""
   tolerations:
@@ -42,3 +43,6 @@ spec:
   volumes:
     - name: model-cache
       emptyDir: {}
+    - name: devshm
+      emptyDir:
+        medium: Memory

@@ -3,7 +3,7 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - upstream/kserve.yaml
-  - upstream/kserve-cluster-resources.yaml
+  - cluster-serving-runtime.yaml
 patches:
   - target:
       version: v1
@@ -14,7 +14,6 @@ patches:
   - target:
       kind: Deployment
       namespace: kserve
-      labelSelector: app.kubernetes.io/name=kserve
     patch: |-
       - op: add
         path: /spec/template/spec/nodeSelector
@@ -30,7 +29,6 @@ patches:
   - target:
       kind: DaemonSet
       namespace: kserve
-      labelSelector: app.kubernetes.io/name=kserve
     patch: |-
       - op: add
         path: /spec/template/spec/nodeSelector
