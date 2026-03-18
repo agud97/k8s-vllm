@@ -27,8 +27,6 @@ spec:
           cpu: "8"
           memory: "48Gi"
       volumeMounts:
-        - name: model-cache
-          mountPath: /mnt/models
         - name: devshm
           mountPath: /dev/shm
       ports:
@@ -41,8 +39,6 @@ spec:
       value: "true"
       effect: NoSchedule
   volumes:
-    - name: model-cache
-      emptyDir: {}
     - name: devshm
       emptyDir:
         medium: Memory

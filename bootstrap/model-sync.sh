@@ -42,11 +42,18 @@ printf '[destination] s3://%s/%s/\n' "$S3_BUCKET" "$S3_PREFIX"
 python3 -m venv "${WORKDIR}/venv"
 # shellcheck disable=SC1091
 source "${WORKDIR}/venv/bin/activate"
-python3 -m pip install --quiet --upgrade pip huggingface_hub[cli]
-huggingface-cli download "$HF_REPO" \
-  --local-dir "${WORKDIR}/model" \
-  --local-dir-use-symlinks False
+python3 -m pip install --quiet --upgrade pip huggingface_hub
+python3 - <<'PY'
+from huggingface_hub import snapshot_download
 
-aws --endpoint-url "${S3_ENDPOINT}" s3 sync "${WORKDIR}/model/" "s3://${S3_BUCKET}/${S3_PREFIX}/" --delete
+snapshot_download(
+    repo_id="Qwen/Qwen3.5-27B-GPTQ-Int4",
+    local_dir="bootstrap/cache/model-sync/model",
+    local_dir_use_symlinks=False,
+    resume_download=True,
+)
+PY
+
+aws --no-verify-ssl --endpoint-url "${S3_ENDPOINT}" s3 sync "${WORKDIR}/model/" "s3://${S3_BUCKET}/${S3_PREFIX}/" --delete
 
 printf '[status] model artifacts synchronized successfully\n'

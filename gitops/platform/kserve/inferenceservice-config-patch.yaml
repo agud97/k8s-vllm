@@ -15,6 +15,7 @@ data:
       "ingressGateway": "kserve/kserve-ingress-gateway",
       "ingressClassName": "istio",
       "disableIngressCreation": true,
+      "disableIstioVirtualHost": true,
       "ingressDomain": "cluster.local",
       "urlScheme": "http"
     }
