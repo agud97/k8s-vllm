@@ -9,4 +9,4 @@ data:
       - model_name: qwen35-27b-gptq-int4
         litellm_params:
           model: openai/qwen35-27b-gptq-int4
-          api_base: http://qwen35-27b-gptq-int4.llm.svc.cluster.local/openai/v1
+          api_base: http://qwen35-27b-gptq-int4-predictor.llm.svc.cluster.local/openai/v1
