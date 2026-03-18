@@ -8,9 +8,28 @@ metadata:
 spec:
   project: platform
   source:
-    repoURL: https://github.com/agud97/k8s-vllm.git
-    targetRevision: main
-    path: gitops/infra/openebs
+    repoURL: https://openebs.github.io/dynamic-localpv-provisioner
+    chart: localpv-provisioner
+    targetRevision: 4.4.0
+    helm:
+      values: |
+        analytics:
+          enabled: false
+        localpv:
+          basePath: /var/openebs/local
+          nodeSelector:
+            node-role.kubernetes.io/infra: ""
+          tolerations:
+            - key: node-role.kubernetes.io/infra
+              operator: Equal
+              value: "true"
+              effect: NoSchedule
+        hostpathClass:
+          enabled: true
+          name: openebs-hostpath
+          reclaimPolicy: Delete
+          isDefaultClass: false
+          basePath: /var/openebs/local
   destination:
     server: https://kubernetes.default.svc
     namespace: openebs
@@ -18,3 +37,5 @@ spec:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
