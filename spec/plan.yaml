@@ -1,0 +1,238 @@
+plan:
+  name: "Non-Managed Kubernetes Lab With GitOps LLM Serving"
+  phases:
+    - id: phase-1
+      name: "Repository Foundation"
+      description: "Create the repository layout, local configuration interfaces, version matrix, and bootstrap entrypoints needed for the lab implementation."
+      tasks:
+        - id: task-1.1
+          name: "Create repository skeleton"
+          description: "Create the top-level directories for bootstrap automation, inventory, GitOps manifests, platform packaging, documentation, and tests."
+          artifact: "bootstrap/, inventory/, gitops/, platform/ or charts/, docs/, tests/"
+          depends_on: []
+          validation: "Repository tree matches the required structure and contains placeholders or initial files for each major area."
+        - id: task-1.2
+          name: "Define local input contract"
+          description: "Create or normalize ignored local configuration files for host inventory, S3 settings, and any bootstrap-only secrets required outside Git."
+          artifact: "local/README.md, local/hosts.yml, local/s3.env, .gitignore"
+          depends_on:
+            - task-1.1
+          validation: "Local files are documented, ignored by Git, and provide all inputs needed by bootstrap automation."
+        - id: task-1.3
+          name: "Add dependency matrix"
+          description: "Create a pinned dependency matrix declaring versions of Kubespray, Kubernetes, Cilium, Istio, ArgoCD, KServe, vLLM, LiteLLM, VictoriaMetrics, Sealed Secrets, OpenEBS, and NVIDIA Device Plugin, plus any conditionally enabled dependencies."
+          artifact: "docs/dependency-matrix.yaml or equivalent repository-owned matrix file"
+          depends_on:
+            - task-1.1
+          validation: "The matrix exists in the repository and explicitly lists selected versions and optional dependencies for the chosen version set."
+        - id: task-1.4
+          name: "Create root bootstrap and validation entrypoints"
+          description: "Add the primary commands or wrapper scripts for bootstrap, deploy, validate, and smoke-test flows."
+          artifact: "Makefile or root task runner plus bootstrap/ scripts"
+          depends_on:
+            - task-1.1
+            - task-1.2
+          validation: "Documented root commands exist and print actionable usage or phase information when invoked."
+      checkpoint:
+        description: "Review the repository structure and input contract before component implementation starts."
+        criteria:
+          - "The repository layout supports bootstrap, GitOps, documentation, and tests without mixing concerns."
+          - "All local-only inputs are clearly separated from Git-managed content."
+          - "The dependency matrix exists and is acceptable as the source of truth for version pinning."
+
+    - id: phase-2
+      name: "Cluster Bootstrap And Node Preparation"
+      description: "Implement machine provisioning automation from SSH-accessible hosts to a Ready Kubernetes cluster with GPU-capable nodes."
+      tasks:
+        - id: task-2.1
+          name: "Build Kubespray inventory and host variables"
+          description: "Create the machine-readable inventory for 3 control-plane nodes, 2 GPU nodes, and 1 infra node, including role metadata required for placement."
+          artifact: "inventory/ hosts and group variables"
+          depends_on:
+            - task-1.2
+            - task-1.3
+          validation: "Inventory files represent all six nodes and encode the intended node roles."
+        - id: task-2.2
+          name: "Implement host preparation automation"
+          description: "Create idempotent automation to prepare Ubuntu 24.04 hosts with required packages, container runtime settings, and prerequisites for Kubespray."
+          artifact: "bootstrap/host-prep scripts or playbooks"
+          depends_on:
+            - task-2.1
+          validation: "Preparation automation runs idempotently and fails clearly on missing prerequisites."
+        - id: task-2.3
+          name: "Implement Kubernetes bootstrap"
+          description: "Automate Kubespray-based cluster creation targeting containerd and Cilium for the defined node topology."
+          artifact: "bootstrap/cluster-bootstrap scripts and Kubespray configuration"
+          depends_on:
+            - task-2.1
+            - task-2.2
+          validation: "Bootstrap produces a Ready cluster with all six nodes visible and Cilium active."
+        - id: task-2.4
+          name: "Implement GPU node enablement"
+          description: "Install NVIDIA drivers, NVIDIA container runtime support, and the NVIDIA Device Plugin on GPU nodes."
+          artifact: "bootstrap/gpu scripts or playbooks plus GitOps manifests for device plugin if applicable"
+          depends_on:
+            - task-2.3
+          validation: "GPU nodes expose `nvidia.com/gpu` resources and do not depend on NVIDIA GPU Operator."
+        - id: task-2.5
+          name: "Implement baseline cluster validation"
+          description: "Add validation scripts to verify host reachability, cluster readiness, Cilium health, and GPU discovery."
+          artifact: "tests/validate-cluster.*"
+          depends_on:
+            - task-2.3
+            - task-2.4
+          validation: "Validation scripts pass on a healthy cluster and fail clearly when a required host or GPU resource is missing."
+      checkpoint:
+        description: "Review the working cluster baseline before GitOps platform components are layered on top."
+        criteria:
+          - "All six nodes are Ready and role assignment is correct."
+          - "Cilium is active and GPU discovery works via NVIDIA Device Plugin."
+          - "Bootstrap and rerun behavior are acceptable for the lab environment."
+
+    - id: phase-3
+      name: "GitOps Platform And Storage Layer"
+      description: "Bootstrap ArgoCD and deliver the foundational GitOps-managed platform services needed by later serving workloads."
+      tasks:
+        - id: task-3.1
+          name: "Bootstrap ArgoCD and self-management"
+          description: "Implement the one-time ArgoCD bootstrap path and the GitOps self-management structure."
+          artifact: "gitops/argocd manifests plus bootstrap/argocd-bootstrap automation"
+          depends_on:
+            - task-1.4
+            - task-2.3
+          validation: "ArgoCD becomes operational, is reachable via port-forward, and reconciles its own repository-managed configuration."
+        - id: task-3.2
+          name: "Implement secrets bootstrap"
+          description: "Deploy Sealed Secrets, document key preservation, and provide the bootstrap flow for reusable sealed secret material outside Git."
+          artifact: "gitops/infra/sealed-secrets and docs/secrets runbook"
+          depends_on:
+            - task-3.1
+          validation: "Sealed Secrets is healthy, plaintext secrets are absent from Git, and rebuild documentation covers key reuse."
+        - id: task-3.3
+          name: "Implement storage and node-role platform add-ons"
+          description: "Deploy OpenEBS LocalPV and any required node-role or scheduling support needed by infra and GPU workloads."
+          artifact: "gitops/infra/openebs and related placement configuration"
+          depends_on:
+            - task-3.1
+          validation: "OpenEBS LocalPV is available and storage classes required by the lab design are present."
+        - id: task-3.4
+          name: "Implement ingress and service mesh path"
+          description: "Deploy Istio and configure the NodePort-based external inference path on infra-1."
+          artifact: "gitops/infra/istio and ingress exposure manifests"
+          depends_on:
+            - task-3.1
+            - task-3.3
+          validation: "Istio control plane is healthy and the intended NodePort exposure path is configured on infra-1."
+        - id: task-3.5
+          name: "Implement platform validation for GitOps layer"
+          description: "Add validation scripts for ArgoCD, Sealed Secrets, OpenEBS, and Istio."
+          artifact: "tests/validate-platform.*"
+          depends_on:
+            - task-3.2
+            - task-3.3
+            - task-3.4
+          validation: "Validation scripts confirm health of the GitOps platform components and fail observably on missing dependencies."
+      checkpoint:
+        description: "Review the GitOps platform baseline before model-serving components are integrated."
+        criteria:
+          - "ArgoCD reconciliation is stable and self-managed."
+          - "Sealed Secrets and OpenEBS behave according to the storage and secret-management design."
+          - "Istio and NodePort exposure are ready for application-layer integration."
+
+    - id: phase-4
+      name: "Serving And Observability Integration"
+      description: "Implement model artifact flow, KServe/vLLM serving, LiteLLM public access, and VictoriaMetrics observability."
+      tasks:
+        - id: task-4.1
+          name: "Implement model artifact synchronization"
+          description: "Create the rerunnable workflow that stages `Qwen/Qwen3.5-27B-GPTQ-Int4` artifacts into S3 and supplies the serving configuration with the correct location."
+          artifact: "bootstrap/model-sync scripts and GitOps values for S3-backed model source"
+          depends_on:
+            - task-1.2
+            - task-3.2
+            - task-3.3
+          validation: "Model sync succeeds with valid S3 credentials and fails observably when credentials or endpoint settings are invalid."
+        - id: task-4.2
+          name: "Implement KServe and vLLM serving stack"
+          description: "Deploy the phase-1 single-replica non-distributed KServe InferenceService using the pinned model source and required version-set dependencies."
+          artifact: "gitops/platform/kserve and gitops/apps/llm-serving manifests"
+          depends_on:
+            - task-3.4
+            - task-4.1
+          validation: "The serving stack becomes healthy within the acceptance window and the workload schedules only on GPU-capable nodes."
+        - id: task-4.3
+          name: "Implement LiteLLM integration and public access"
+          description: "Deploy LiteLLM with one pinned model alias, one internal OpenAI-compatible upstream endpoint, native API key auth, and NodePort-based public access."
+          artifact: "gitops/apps/litellm manifests and sealed secrets for API keys"
+          depends_on:
+            - task-4.2
+            - task-3.2
+            - task-3.4
+          validation: "Requests without valid API keys fail, valid requests route through LiteLLM, and the configured upstream contract matches the specification."
+        - id: task-4.4
+          name: "Implement VictoriaMetrics stack"
+          description: "Deploy VictoriaMetrics Kubernetes stack with 7-day retention, 100Gi persistent storage, and the required metric targets and dashboards."
+          artifact: "gitops/platform/victoriametrics manifests"
+          depends_on:
+            - task-3.3
+            - task-3.4
+          validation: "VictoriaMetrics is healthy, PVCs request 100Gi, retention is set to 7 days, and required target coverage is present."
+        - id: task-4.5
+          name: "Implement integration validation"
+          description: "Add cluster-dependent validation for serving readiness, LiteLLM auth, S3-backed model access, NodePort reachability, and observability coverage."
+          artifact: "tests/validate-serving.* and tests/validate-observability.*"
+          depends_on:
+            - task-4.2
+            - task-4.3
+            - task-4.4
+          validation: "Integration validation covers positive and negative paths for serving, auth, storage access, and observability health."
+      checkpoint:
+        description: "Review the fully integrated serving and observability layer before finalizing documentation and test completion."
+        criteria:
+          - "KServe, vLLM, and LiteLLM work together through the defined phase-1 contract."
+          - "Public access works only through the expected NodePort and API key flow."
+          - "VictoriaMetrics provides the required metrics and dashboards."
+
+    - id: phase-5
+      name: "Final Validation And Operator Documentation"
+      description: "Complete the automated test suite, smoke tests, and operator-facing documentation required for handoff."
+      tasks:
+        - id: task-5.1
+          name: "Implement static validation suite"
+          description: "Add static validation for YAML, Helm or Kustomize inputs, shell scripts, and pinned version checks."
+          artifact: "tests/static/ and root validation targets"
+          depends_on:
+            - task-1.4
+            - task-3.1
+            - task-4.4
+          validation: "Static checks run from the repository without cluster access and fail on malformed manifests, shell issues, or floating versions."
+        - id: task-5.2
+          name: "Implement smoke test suite"
+          description: "Create the repeatable smoke test for the pinned LiteLLM model alias using the documented prompt and acceptance thresholds."
+          artifact: "tests/smoke-test.*"
+          depends_on:
+            - task-4.3
+          validation: "The smoke test returns HTTP 200, non-empty generated text, no runtime error, and completes within 60 seconds on a healthy deployment."
+        - id: task-5.3
+          name: "Write operator runbook"
+          description: "Document bootstrap, local inputs, dependency matrix usage, validation commands, recovery for lab rebuilds, and the sample smoke-test request and response."
+          artifact: "README.md and docs/runbooks/*"
+          depends_on:
+            - task-5.1
+            - task-5.2
+          validation: "Documentation contains step-by-step bootstrap instructions, verification commands, and sample smoke-test artifacts without requiring screenshots."
+        - id: task-5.4
+          name: "Execute final end-to-end validation"
+          description: "Run the documented validation flow from bootstrap through post-deployment smoke tests and confirm all acceptance-facing artifacts are present."
+          artifact: "Validated repository state and documented validation command set"
+          depends_on:
+            - task-5.1
+            - task-5.2
+            - task-5.3
+          validation: "All automated validations and smoke tests pass, and the repository contains every artifact required by the acceptance criteria."
+      checkpoint:
+        description: "Review the completed implementation package before coding handoff is considered done."
+        criteria:
+          - "The automated validation suite is complete and aligned with acceptance criteria."
+          - "Operator documentation is sufficient to reproduce the lab deployment from the repository."
+          - "End-to-end validation demonstrates the specified lab behavior without undocumented manual steps."

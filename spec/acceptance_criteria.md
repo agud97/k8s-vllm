@@ -1,0 +1,143 @@
+# Acceptance Criteria
+
+## Cluster Bootstrap And Topology
+
+1. WHEN the stakeholder has manually created six reachable Ubuntu 24.04 virtual machines with SSH access and the repository bootstrap instructions are executed, THEN the deployment workflow is started from the current repository, SHALL provision a non-managed Kubernetes cluster with exactly 3 control-plane nodes, 2 GPU worker nodes, and 1 infra node.
+
+2. WHEN the cluster bootstrap completes successfully, THEN the Kubernetes cluster state is inspected, SHALL show all intended nodes in `Ready` state.
+
+3. WHEN the infrastructure prerequisites are reviewed before bootstrap, THEN the provisioned virtual machines are inspected, SHALL satisfy the role-specific sizing requirements defined in the requirements document.
+
+4. WHEN the cluster bootstrap completes successfully, THEN the cluster network is inspected, SHALL show Cilium installed and operating as the active CNI.
+
+5. WHEN the cluster bootstrap completes successfully, THEN the service mesh components are inspected, SHALL show Istio installed and its control-plane components healthy.
+
+6. WHEN the bootstrap workflow is re-run against an already configured environment, THEN the same bootstrap command is executed again, SHALL complete without destructive rollback of the intended cluster state and SHALL preserve the managed topology.
+
+7. WHEN one or more required hosts are missing or unreachable before bootstrap, THEN the bootstrap workflow is executed, SHALL fail with an observable error identifying that host reachability or inventory prerequisites are not satisfied.
+
+8. WHEN a previous bootstrap attempt failed partway through, THEN the bootstrap workflow is executed again on the same environment, SHALL resume or reconcile safely without requiring destructive cleanup as a prerequisite.
+
+## GitOps And Repository Behavior
+
+9. WHEN the repository is inspected before deployment, THEN the operator reviews the repository contents, SHALL find deployment automation, GitOps manifests, pinned component versions, and operator-facing instructions in the same repository.
+
+10. WHEN ArgoCD bootstrap is executed after cluster creation, THEN ArgoCD is installed once outside GitOps, SHALL become operational and capable of reconciling the repository-managed platform resources.
+
+11. WHEN ArgoCD has been bootstrapped and repository synchronization is enabled, THEN the managed applications are reconciled, SHALL result in ArgoCD self-management and GitOps management of in-cluster platform components.
+
+12. WHEN a managed manifest in the repository is changed to a valid desired state, THEN ArgoCD reconciliation occurs, SHALL converge the cluster toward that desired state without requiring manual in-cluster edits.
+
+13. WHEN the repository contains pinned versions for platform components, THEN the operator reviews the manifests and values, SHALL find explicit version pinning for the deployed stack instead of floating latest-version references where pinning is expected.
+
+13a. WHEN the repository is reviewed for implementation metadata, THEN it SHALL contain a pinned dependency matrix declaring the selected platform versions and any conditionally enabled dependencies for the chosen version set.
+
+## Secrets Management
+
+14. WHEN the lab environment is deployed, THEN the cluster secret-management components are inspected, SHALL show Sealed Secrets deployed as the secret-management mechanism for this environment.
+
+15. WHEN a required application secret is stored in Git for deployment, THEN the repository content is reviewed, SHALL contain the secret only in sealed form and not as plaintext Kubernetes Secret data.
+
+16. WHEN the lab cluster is rebuilt and the preserved Sealed Secrets key material is restored, THEN previously committed sealed secrets are applied again, SHALL decrypt successfully into usable Kubernetes Secrets without requiring resealing.
+
+17. WHEN the Sealed Secrets controller or key material is absent during secret reconciliation, THEN sealed secrets are applied, SHALL fail observably rather than producing silent partial secret injection.
+
+## Access And Exposure
+
+18. WHEN the cluster platform is fully reconciled, THEN external exposure is inspected, SHALL show that ArgoCD UI is not publicly exposed and is reachable only through port-forward access.
+
+19. WHEN the inference entrypoint is inspected after deployment, THEN public access configuration is reviewed, SHALL expose inference through LiteLLM on `NodePort` at the public IP of `infra-1`.
+
+20. WHEN the public inference endpoint is called without an API key, THEN a client request is sent to LiteLLM, SHALL be rejected with an authorization failure response.
+
+21. WHEN the public inference endpoint is called with an invalid API key, THEN a client request is sent to LiteLLM, SHALL be rejected with an authorization failure response.
+
+22. WHEN the public inference endpoint is called with a valid LiteLLM API key, THEN a supported inference request is sent, SHALL be accepted and routed through LiteLLM to the underlying model-serving path.
+
+23. WHEN the deployed lab environment is inspected for transport settings, THEN the public inference endpoint configuration is reviewed, SHALL permit initial HTTP access without requiring TLS or a custom DNS name.
+
+24. WHEN the phase-1 inference integration is inspected, THEN the LiteLLM upstream configuration is reviewed, SHALL reference exactly one internal OpenAI-compatible upstream endpoint provided by the serving stack.
+
+24a. WHEN the phase-1 inference integration is inspected, THEN the LiteLLM upstream configuration is reviewed, SHALL target an internal HTTP endpoint exposing `/v1/chat/completions`.
+
+24b. WHEN the LiteLLM model configuration is inspected for phase 1, THEN the configured models are reviewed, SHALL define exactly one pinned model alias for the deployed Qwen model and the smoke test SHALL use that same alias.
+
+25. WHEN the selected `NodePort` on `infra-1` is blocked by firewall or provider networking, THEN external inference validation is executed, SHALL fail with an observable endpoint reachability error.
+
+## Model Serving
+
+26. WHEN the platform components are reconciled successfully, THEN the model-serving stack is inspected, SHALL show KServe and vLLM components deployed in the cluster.
+
+27. WHEN the deployment configuration is inspected, THEN the model source definition is reviewed, SHALL reference `Qwen/Qwen3.5-27B-GPTQ-Int4` as the pinned model source.
+
+28. WHEN the selected KServe, Knative, or Istio implementation requires additional dependencies such as `cert-manager`, THEN the deployed platform is inspected, SHALL match the conditionally enabled dependencies declared in the repository dependency matrix.
+
+29. WHEN the initial lab-serving configuration is applied, THEN the runtime topology is inspected, SHALL use a single-replica, non-distributed `KServe InferenceService` deployment without requiring true multi-node inference across both GPU nodes.
+
+30. WHEN the target model deployment reaches a healthy state, THEN Kubernetes workload resources are inspected, SHALL show the serving workload scheduled only onto GPU-capable nodes.
+
+31. WHEN the target model deployment reaches a healthy state, THEN cluster GPU resources are inspected, SHALL show NVIDIA GPU capacity discoverable by Kubernetes workloads.
+
+31a. WHEN the GPU discovery components are inspected in the lab environment, THEN the platform configuration is reviewed, SHALL use the NVIDIA Device Plugin and SHALL not depend on NVIDIA GPU Operator.
+
+32. WHEN the cluster is asked to serve inference after the model is reported ready, THEN a smoke-test request is sent through LiteLLM, SHALL return `HTTP 200`, a non-empty generated text field, and no infrastructure or runtime error in the response.
+
+33. WHEN the smoke-test request uses a short neutral prompt such as "Напиши одно короткое предложение о Kubernetes.", THEN the request is processed by the deployed model, SHALL return non-empty model-generated text rather than an infrastructure error.
+
+34. WHEN model startup fails because the selected artifact or runtime settings are incompatible with vLLM, THEN the deployment attempt occurs, SHALL fail observably instead of reporting the model as successfully ready.
+
+35. WHEN only one GPU node is available or one GPU node becomes unavailable before a GPU-dependent serving deployment, THEN the serving workload is reconciled, SHALL not falsely report a healthy ready state if the required GPU scheduling constraints cannot be met.
+
+36. WHEN the phase-1 model deployment is started in an otherwise healthy cluster, THEN readiness is measured from deployment start, SHALL reach the documented ready state within 30 minutes.
+
+37. WHEN the documented LiteLLM smoke test is executed against a ready deployment, THEN response time is measured from request start, SHALL complete successfully within 60 seconds.
+
+38. WHEN acceptance testing is performed for inference behavior, THEN the test workload is applied, SHALL assume a concurrency target of 1 client request at a time.
+
+39. WHEN the S3 credentials or endpoint configuration are invalid, THEN model synchronization or serving initialization is attempted, SHALL fail observably with a storage access error.
+
+40. WHEN model artifacts cannot be downloaded or synchronized from the configured S3 location, THEN the model deployment workflow runs, SHALL fail observably and SHALL not report the serving workload as ready.
+
+41. WHEN GPU resource discovery is missing or `nvidia.com/gpu` is not exposed on the target nodes, THEN the GPU-dependent serving workload is reconciled, SHALL remain unready with an observable scheduling or runtime error.
+
+## Storage Behavior
+
+42. WHEN platform storage configuration is inspected, THEN model artifact storage settings are reviewed, SHALL support the use of external S3-backed model artifacts.
+
+43. WHEN stateful in-cluster components requiring persistent volumes are deployed in the lab environment, THEN their storage classes are inspected, SHALL use OpenEBS LocalPV for persistent storage where configured in this environment.
+
+44. WHEN the VictoriaMetrics stack is deployed, THEN its persistent volume claims are inspected, SHALL request 100Gi of persistent storage.
+
+45. WHEN the Sealed Secrets key management approach is inspected for the lab environment, THEN the bootstrap and recovery documentation are reviewed, SHALL preserve the reusable Sealed Secrets key material outside Git for cluster rebuild.
+
+46. WHEN ArgoCD deployment state is inspected for the lab environment, THEN its configuration is reviewed, SHALL not use PVC-backed persistence and SHALL not include PVC-backed ArgoCD features in current lab scope.
+
+47. WHEN temporary model download or cache storage is inspected, THEN the serving and synchronization configuration are reviewed, SHALL treat that workspace as ephemeral unless explicitly configured otherwise.
+
+48. WHEN the lab environment is inspected for backup behavior, THEN operational documentation and manifests are reviewed, SHALL not require backup workflows as a condition of acceptance.
+
+49. WHEN VictoriaMetrics persistent volume provisioning fails or the requested storage is unavailable, THEN the observability stack is reconciled, SHALL fail observably and SHALL not be reported healthy.
+
+## Observability
+
+50. WHEN the observability stack is reconciled, THEN the cluster monitoring components are inspected, SHALL show VictoriaMetrics Kubernetes stack deployed in the same cluster.
+
+51. WHEN the deployed observability configuration is reviewed, THEN retention settings are inspected, SHALL set VictoriaMetrics retention to 7 days.
+
+52. WHEN the observability stack is healthy, THEN metrics targets are inspected, SHALL collect metrics for kube-state-metrics, node-exporter, Kubernetes control plane, cAdvisor or kubelet, Cilium, Istio, ArgoCD, LiteLLM, and KServe or vLLM.
+
+53. WHEN the operator opens the observability dashboards, THEN dashboard coverage is reviewed, SHALL provide dashboard coverage for these monitored areas: cluster nodes, Kubernetes workloads, Kubernetes control plane, Cilium, Istio, ArgoCD, LiteLLM, and KServe or vLLM.
+
+54. WHEN the observability deliverable is inspected, THEN the deployed scope is reviewed, SHALL include metrics and dashboards and SHALL not require alerting, tracing, or centralized logging for acceptance.
+
+## Documentation And Operator Experience
+
+55. WHEN the final repository is delivered, THEN the README is reviewed, SHALL contain step-by-step deployment instructions for bringing the environment up after the VMs are created and SSH access is available.
+
+56. WHEN the final repository is delivered, THEN the documentation is reviewed, SHALL describe an execution path that is as close as possible to one command for bootstrap after manual VM creation.
+
+57. WHEN the final documentation is reviewed, THEN it SHALL include verification commands for cluster health, ArgoCD status, and inference validation.
+
+58. WHEN the final documentation is reviewed, THEN it SHALL include a sample LiteLLM smoke-test request and a sample successful response.
+
+59. WHEN the final documentation package is reviewed, THEN it SHALL not depend on screenshots as a required acceptance artifact.
