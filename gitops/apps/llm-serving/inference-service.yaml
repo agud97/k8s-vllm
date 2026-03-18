@@ -30,7 +30,8 @@ spec:
           cpu: "4"
           memory: "24Gi"
       args:
-        - --quantization=gptq
+        - --dtype=float16
+        - --quantization=gptq_marlin
         - --max-model-len=4096
         - --gpu-memory-utilization=0.92
         - --trust-remote-code
