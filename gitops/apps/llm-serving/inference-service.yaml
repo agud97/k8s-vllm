@@ -19,7 +19,7 @@ spec:
     model:
       modelFormat:
         name: huggingface
-      runtime: kserve-huggingfaceserver-gpu
+      runtime: vllm-openai-runtime
       storageUri: hf://Qwen/Qwen3.5-27B-GPTQ-Int4
       resources:
         limits:
@@ -30,9 +30,8 @@ spec:
           cpu: "4"
           memory: "24Gi"
       args:
-        - --backend=vllm
-        - --model_name=qwen35-27b-gptq-int4
         - --quantization=gptq
-        - --max_model_len=4096
-        - --gpu_memory_utilization=0.92
-        - --enforce_eager
+        - --max-model-len=4096
+        - --gpu-memory-utilization=0.92
+        - --trust-remote-code
+        - --enforce-eager
