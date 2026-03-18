@@ -1,0 +1,15 @@
+---
+kube_version: 1.34.3
+
+cluster_name: k8s-vllm-lab
+
+enable_nodelocaldns: true
+
+# Keep the service and pod CIDRs explicit for reproducible bootstrap behavior.
+kube_service_addresses: 10.233.0.0/18
+kube_pods_subnet: 10.233.64.0/18
+
+# The infra node is the intended public ingress point for phase-1 NodePort exposure.
+public_ingress_host: infra-1
+
+phase1_model_alias: qwen35-27b-gptq-int4

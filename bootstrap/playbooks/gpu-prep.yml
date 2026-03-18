@@ -1,0 +1,82 @@
+---
+- name: Prepare GPU nodes for Kubernetes scheduling
+  hosts: gpu
+  become: false
+  gather_facts: true
+  tasks:
+    - name: Assert supported operating system
+      ansible.builtin.assert:
+        that:
+          - ansible_distribution == "Ubuntu"
+          - ansible_distribution_version is version('24.04', '>=')
+        fail_msg: "Only Ubuntu 24.04 LTS or newer is supported by this lab automation."
+
+    - name: Install NVIDIA driver meta-package
+      ansible.builtin.apt:
+        name:
+          - nvidia-driver-570
+          - ubuntu-drivers-common
+        state: present
+        update_cache: true
+
+    - name: Install NVIDIA container runtime prerequisites
+      ansible.builtin.apt:
+        name:
+          - nvidia-container-toolkit
+        state: present
+
+    - name: Ensure containerd config directory exists
+      ansible.builtin.file:
+        path: /etc/containerd
+        state: directory
+        mode: '0755'
+
+    - name: Ensure containerd drop-in directory exists
+      ansible.builtin.file:
+        path: /etc/containerd/conf.d
+        state: directory
+        mode: '0755'
+
+    - name: Generate default containerd config if missing
+      ansible.builtin.shell: |
+        test -f /etc/containerd/config.toml || containerd config default >/etc/containerd/config.toml
+      args:
+        executable: /bin/bash
+      changed_when: false
+
+    - name: Remove misplaced containerd imports lines
+      ansible.builtin.lineinfile:
+        path: /etc/containerd/config.toml
+        regexp: '^imports = '
+        state: absent
+
+    - name: Ensure containerd loads drop-in runtime configuration
+      ansible.builtin.lineinfile:
+        path: /etc/containerd/config.toml
+        insertafter: '^state = '
+        line: 'imports = ["/etc/containerd/conf.d/*.toml"]'
+
+    - name: Configure NVIDIA runtime drop-in for containerd v3
+      ansible.builtin.copy:
+        dest: /etc/containerd/conf.d/99-nvidia.toml
+        mode: '0644'
+        content: |
+          version = 3
+
+          [plugins.'io.containerd.cri.v1.runtime'.containerd]
+            default_runtime_name = 'nvidia'
+
+            [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.nvidia]
+              runtime_type = 'io.containerd.runc.v2'
+              privileged_without_host_devices = false
+              base_runtime_spec = '/etc/containerd/cri-base.json'
+
+              [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.nvidia.options]
+                BinaryName = '/usr/bin/nvidia-container-runtime'
+                SystemdCgroup = true
+
+    - name: Restart containerd
+      ansible.builtin.service:
+        name: containerd
+        state: restarted
+        enabled: true

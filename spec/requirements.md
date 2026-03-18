@@ -45,11 +45,11 @@ Important constraint: the source text mixes stakeholder requirements with archit
 15. The inference endpoint must be exposed to the internet and protected with token-based authorization.
 
 16. Minimum acceptance criteria:
-   - the cluster can be brought up from scratch through prepared automation and operator actions
-   - ArgoCD successfully syncs platform components
-   - the target model is deployed through KServe
-   - the public inference endpoint is reachable with token-based authorization
-   - a test inference request returns a valid response
+   - the agent performs the live deployment against the provided virtual machines and leaves behind a working cluster
+   - ArgoCD is actually installed in the cluster and successfully syncs platform components
+   - the target model is actually deployed through KServe in the cluster
+   - the public inference endpoint is actually reachable with token-based authorization
+   - a test inference request against the live deployment returns a valid response
 
 17. Environment type is a lab environment, not a production-like platform.
 
@@ -57,7 +57,8 @@ Important constraint: the source text mixes stakeholder requirements with archit
 
 19. The final deliverable must include:
    - a Git repository containing the deployment automation and GitOps manifests
-   - an operator instruction describing how to bring the environment up
+   - a working deployed lab cluster on the provided virtual machines
+   - an operator instruction describing how to bring the environment up again
    - an execution flow that is as close as possible to "one command" after the VMs are manually created and SSH access is provided
 
 20. External access to model inference must go through LiteLLM deployed in the same Kubernetes cluster.
@@ -112,6 +113,17 @@ Important constraint: the source text mixes stakeholder requirements with archit
    - a sample successful response
    - screenshots are not required
 
+37a. The agent must execute the deployment itself when SSH access, repository access, and required local secrets are available, rather than stopping at manifest generation or static validation.
+
+37b. Acceptance for the current scope requires live execution of:
+   - host preparation
+   - Kubernetes installation
+   - ArgoCD bootstrap
+   - GitOps reconciliation of platform and application components
+   - post-deployment validation and smoke test
+
+37c. A repository-only result, scaffold-only manifests, or script-only delivery without a live deployed cluster is not sufficient.
+
 38. Recommended VM sizing is elevated to an explicit requirement for the lab environment:
    - each control-plane node must have 4 vCPU, 16 GB RAM, and 100 GB SSD
    - the infra node must have 8 vCPU, 32 GB RAM, and 200 GB SSD
@@ -142,6 +154,12 @@ Important constraint: the source text mixes stakeholder requirements with archit
 
 44. The repository must contain a pinned dependency matrix that declares the selected versions of core platform components and any conditionally enabled dependencies for the chosen version set.
 
+45. The implementation must produce and preserve live deployment evidence in the repository documentation, including:
+   - the commands actually used for deployment
+   - the final public inference endpoint address
+   - the final ArgoCD port-forward command
+   - the final smoke-test command against the live cluster
+
 ## Implementation Risks
 
 1. Cloud provider and region are still unspecified.
@@ -156,8 +174,8 @@ Why this is a risk: even with a pinned Hugging Face source, practical startup be
 4. LiteLLM API key configuration and secret-delivery flow still need correct implementation.
 Why this is a risk: the authentication mechanism has been selected, but a misconfigured secret flow would still break public inference access.
 
-5. Non-functional requirements are only partially defined.
-Why this is a risk: the environment type is now defined as lab, but only the minimum acceptance-level performance targets are fixed.
+5. Live deployment may surface host- or provider-specific issues not visible in static repository validation.
+Why this is a risk: firewall policy, package mirrors, GPU driver compatibility, and provider networking may require in-place remediation during execution.
 
 ## Missing Information
 

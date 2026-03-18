@@ -1,0 +1,44 @@
+apiVersion: serving.kserve.io/v1alpha1
+kind: ClusterServingRuntime
+metadata:
+  name: vllm-runtime
+spec:
+  supportedModelFormats:
+    - name: openai
+      version: "1"
+      autoSelect: true
+  containers:
+    - name: kserve-container
+      image: vllm/vllm-openai:v0.17.1
+      args:
+        - "--port=8080"
+        - "--served-model-name=$(MODEL_ALIAS)"
+        - "--model=$(MODEL_PATH)"
+      env:
+        - name: MODEL_ALIAS
+          value: qwen35-27b-gptq-int4
+        - name: MODEL_PATH
+          value: /mnt/models
+      ports:
+        - containerPort: 8080
+      resources:
+        requests:
+          cpu: "4"
+          memory: "24Gi"
+        limits:
+          nvidia.com/gpu: "1"
+          cpu: "8"
+          memory: "48Gi"
+      volumeMounts:
+        - name: model-cache
+          mountPath: /mnt/models
+  nodeSelector:
+    node-role.kubernetes.io/gpu: ""
+  tolerations:
+    - key: nvidia.com/gpu
+      operator: Equal
+      value: "true"
+      effect: NoSchedule
+  volumes:
+    - name: model-cache
+      emptyDir: {}

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sealed-secrets-bootstrap-note
+  namespace: kube-system
+data:
+  purpose: "Documents that Sealed Secrets is installed by the bootstrap script using the pinned version from the dependency matrix."

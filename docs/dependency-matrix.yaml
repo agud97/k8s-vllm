@@ -1,0 +1,56 @@
+apiVersion: codex.dev/v1alpha1
+kind: DependencyMatrix
+metadata:
+  name: non-managed-k8s-lab
+  description: Pinned component versions and conditional dependencies for the lab implementation.
+spec:
+  operating_system:
+    ubuntu: "24.04 LTS"
+  core_components:
+    kubernetes:
+      version: "1.34.3"
+      source: "https://github.com/kubernetes-sigs/kubespray/blob/v2.30.0/roles/kubespray_defaults/vars/main/checksums.yml"
+    kubespray:
+      version: "v2.30.0"
+      source: "https://github.com/kubernetes-sigs/kubespray/releases/tag/v2.30.0"
+    cilium:
+      version: "v1.19.1"
+      source: "https://github.com/cilium/cilium/releases/tag/v1.19.1"
+    istio:
+      version: "1.29.1"
+      source: "https://github.com/istio/istio/releases/tag/1.29.1"
+    argocd:
+      version: "v3.3.4"
+      source: "https://github.com/argoproj/argo-cd/releases/tag/v3.3.4"
+    kserve:
+      version: "v0.17.0"
+      source: "https://github.com/kserve/kserve/releases/tag/v0.17.0"
+    vllm:
+      version: "v0.17.1"
+      source: "https://github.com/vllm-project/vllm/releases/tag/v0.17.1"
+    litellm:
+      version: "1.82.4"
+      source: "https://pypi.org/project/litellm/1.82.4/"
+    victoriametrics:
+      version: "v1.138.0"
+      source: "https://github.com/VictoriaMetrics/VictoriaMetrics/releases/tag/v1.138.0"
+    sealed_secrets:
+      version: "v0.36.1"
+      source: "https://github.com/bitnami-labs/sealed-secrets/releases/tag/v0.36.1"
+    openebs:
+      version: "v4.4.0"
+      source: "https://github.com/openebs/openebs/releases/tag/v4.4.0"
+    nvidia_device_plugin:
+      version: "v0.19.0"
+      source: "https://github.com/NVIDIA/k8s-device-plugin/releases/tag/v0.19.0"
+  conditional_dependencies:
+    knative_serving:
+      enabled: true
+      version: "knative-v1.21.1"
+      source: "https://github.com/knative/serving/releases/tag/knative-v1.21.1"
+      reason: "Required by the selected KServe version set for phase-1 InferenceService serving."
+    cert_manager:
+      enabled: false
+      version: null
+      source: null
+      reason: "Not included unless the selected KServe, Knative, or Istio version set proves it is required during implementation validation."

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ingress-exposure-note
+  namespace: istio-ingress
+data:
+  public_endpoint: "http://<infra-1-public-ip>:32080"
+  routing_note: "Phase-1 public inference traffic is expected to enter through infra-1 NodePort exposure."

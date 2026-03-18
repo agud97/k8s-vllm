@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: platform-placement-notes
+  namespace: openebs
+data:
+  infra-node-role: "Infra-facing stateful services are intended to prefer infra-1 where practical."
+  gpu-node-role: "GPU-serving workloads are intended to use nodes labeled node-role.kubernetes.io/gpu."

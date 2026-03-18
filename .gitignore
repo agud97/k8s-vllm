@@ -1,3 +1,8 @@
+/\.venv/
 /local/*
 !/local/*.example
 !/local/README.md
+/inventory/generated/*
+!/inventory/generated/.gitkeep
+/bootstrap/cache/*
+!/bootstrap/cache/.gitkeep

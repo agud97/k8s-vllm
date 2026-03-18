@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: litellm-config
+  namespace: llm
+data:
+  config.yaml: |
+    model_list:
+      - model_name: qwen35-27b-gptq-int4
+        litellm_params:
+          model: openai/qwen35-27b-gptq-int4
+          api_base: http://qwen35-27b-gptq-int4-predictor-default.llm.svc.cluster.local/v1/chat/completions

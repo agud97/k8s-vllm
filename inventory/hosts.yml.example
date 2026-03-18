@@ -1,0 +1,49 @@
+all:
+  hosts:
+    cp-1:
+      ansible_host: 203.0.113.11
+      ansible_user: root
+      ansible_password: REPLACE_CP_1_ROOT_PASSWORD
+    cp-2:
+      ansible_host: 203.0.113.12
+      ansible_user: root
+      ansible_password: REPLACE_CP_2_ROOT_PASSWORD
+    cp-3:
+      ansible_host: 203.0.113.13
+      ansible_user: root
+      ansible_password: REPLACE_CP_3_ROOT_PASSWORD
+    infra-1:
+      ansible_host: 203.0.113.21
+      ansible_user: root
+      ansible_password: REPLACE_INFRA_1_ROOT_PASSWORD
+    gpu-1:
+      ansible_host: 203.0.113.31
+      ansible_user: root
+      ansible_password: REPLACE_GPU_1_ROOT_PASSWORD
+    gpu-2:
+      ansible_host: 203.0.113.32
+      ansible_user: root
+      ansible_password: REPLACE_GPU_2_ROOT_PASSWORD
+  children:
+    kube_control_plane:
+      hosts:
+        cp-1:
+        cp-2:
+        cp-3:
+    etcd:
+      hosts:
+        cp-1:
+        cp-2:
+        cp-3:
+    kube_node:
+      hosts:
+        infra-1:
+        gpu-1:
+        gpu-2:
+    gpu:
+      hosts:
+        gpu-1:
+        gpu-2:
+    infra:
+      hosts:
+        infra-1:

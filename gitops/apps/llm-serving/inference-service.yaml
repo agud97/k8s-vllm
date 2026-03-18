@@ -1,0 +1,22 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: qwen35-27b-gptq-int4
+  namespace: llm
+spec:
+  predictor:
+    serviceAccountName: llm-model-sa
+    minReplicas: 1
+    model:
+      modelFormat:
+        name: openai
+      runtime: vllm-runtime
+      storageUri: s3://REPLACE_S3_BUCKET/REPLACE_S3_PREFIX/
+      resources:
+        limits:
+          nvidia.com/gpu: "1"
+          cpu: "8"
+          memory: "48Gi"
+        requests:
+          cpu: "4"
+          memory: "24Gi"

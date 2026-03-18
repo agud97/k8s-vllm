@@ -10,6 +10,7 @@ Relevant specs:
 ### MUST
 
 - The repository MUST remain the single source of truth for deployment automation, GitOps manifests, version pinning, and operator documentation.
+- The implementation MUST result in a live deployed lab cluster on the provided virtual machines; repository artifacts alone are not a sufficient completion state.
 - The repository MUST separate concerns into top-level areas for bootstrap automation, cluster inventory/configuration, GitOps applications, reusable platform manifests, and operator documentation.
 - The GitOps area MUST be organized by platform responsibility, not by ad hoc file accumulation.
 - The GitOps area MUST include distinct directories for:
@@ -22,6 +23,7 @@ Relevant specs:
 - The repository MUST include environment-specific values only for the current lab environment and MUST NOT imply unsupported production environments as ready-to-use.
 - The repository MUST store rendered or source manifests in a way that ArgoCD can reconcile directly from Git.
 - The repository MUST include a dedicated documentation file for bootstrap, validation, and recovery steps relevant to the lab scope.
+- The documentation MUST capture the commands and environment-specific outputs needed to prove that the live deployment was executed successfully.
 
 ### SHOULD
 
@@ -46,6 +48,7 @@ Relevant specs:
 ### MUST
 
 - Bootstrap automation MUST be designed as idempotent orchestration steps with explicit inputs, observable outputs, and non-zero exit codes on failure.
+- The agent MUST execute the bootstrap automation against the provided hosts once prerequisites are available, unless blocked by a real infrastructure or credential failure.
 - Each major platform capability MUST have a clearly defined ownership boundary:
   - cluster bootstrap
   - ArgoCD bootstrap
@@ -64,6 +67,7 @@ Relevant specs:
 - The design MUST preserve an upgrade path to future multi-node inference without forcing a distributed serving implementation in phase 1.
 - Platform components MUST be deployable independently enough to support failure isolation and targeted reconciliation.
 - Validation logic MUST be encapsulated in dedicated scripts or targets rather than buried in README prose only.
+- Component delivery is not complete until the corresponding live component is installed and validated in the target cluster.
 
 ### SHOULD
 
@@ -187,6 +191,9 @@ Relevant specs:
 - Post-deployment validation MUST include the documented smoke test prompt through LiteLLM and assert successful HTTP response plus non-empty text output.
 - Validation for pinned versions MUST assert that required platform images or chart references are not left floating.
 - Validation logic MUST be runnable from the repository with documented commands.
+- Final validation MUST be performed against the live target cluster, not only through static repository checks.
+- Post-deployment validation MUST be actually executed before completion is claimed.
+- The implementation MUST produce or preserve a usable kubeconfig or equivalent cluster access path for post-deployment validation.
 
 ### SHOULD
 
@@ -195,6 +202,7 @@ Relevant specs:
 - End-to-end validation SHOULD be split into fast checks and cluster-dependent checks.
 - Smoke tests SHOULD be implemented as repeatable scripts rather than manually composed curl commands in docs only.
 - Tests SHOULD fail fast and report the failing component category clearly.
+- Live deployment evidence SHOULD be recorded in the final documentation so that a reviewer can inspect what was actually executed and what endpoint was produced.
 
 ### MUST NOT
 
@@ -202,3 +210,4 @@ Relevant specs:
 - The test strategy MUST NOT treat a running pod count alone as sufficient evidence of success.
 - The test strategy MUST NOT require screenshots to prove correctness.
 - The test strategy MUST NOT skip negative-path checks for authentication or failed prerequisite handling.
+- The test strategy MUST NOT treat generated manifests, unexecuted scripts, or static validation alone as proof that the environment is deployed.

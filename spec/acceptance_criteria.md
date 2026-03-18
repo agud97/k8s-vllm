@@ -6,6 +6,8 @@
 
 2. WHEN the cluster bootstrap completes successfully, THEN the Kubernetes cluster state is inspected, SHALL show all intended nodes in `Ready` state.
 
+2a. WHEN the agent claims phase-1 or final completion, THEN the live target environment is inspected, SHALL contain an actually running Kubernetes cluster on the provided six virtual machines and SHALL not be accepted based on repository artifacts alone.
+
 3. WHEN the infrastructure prerequisites are reviewed before bootstrap, THEN the provisioned virtual machines are inspected, SHALL satisfy the role-specific sizing requirements defined in the requirements document.
 
 4. WHEN the cluster bootstrap completes successfully, THEN the cluster network is inspected, SHALL show Cilium installed and operating as the active CNI.
@@ -25,6 +27,8 @@
 10. WHEN ArgoCD bootstrap is executed after cluster creation, THEN ArgoCD is installed once outside GitOps, SHALL become operational and capable of reconciling the repository-managed platform resources.
 
 11. WHEN ArgoCD has been bootstrapped and repository synchronization is enabled, THEN the managed applications are reconciled, SHALL result in ArgoCD self-management and GitOps management of in-cluster platform components.
+
+11a. WHEN final acceptance is evaluated, THEN the live cluster is inspected, SHALL show that ArgoCD is actually installed in the cluster and not merely described in manifests or scripts.
 
 12. WHEN a managed manifest in the repository is changed to a valid desired state, THEN ArgoCD reconciliation occurs, SHALL converge the cluster toward that desired state without requiring manual in-cluster edits.
 
@@ -67,6 +71,8 @@
 ## Model Serving
 
 26. WHEN the platform components are reconciled successfully, THEN the model-serving stack is inspected, SHALL show KServe and vLLM components deployed in the cluster.
+
+26a. WHEN final acceptance is evaluated, THEN the live cluster is inspected, SHALL show that KServe, LiteLLM, and VictoriaMetrics are actually installed and reconciled in the cluster rather than only present in the repository.
 
 27. WHEN the deployment configuration is inspected, THEN the model source definition is reviewed, SHALL reference `Qwen/Qwen3.5-27B-GPTQ-Int4` as the pinned model source.
 
@@ -141,3 +147,7 @@
 58. WHEN the final documentation is reviewed, THEN it SHALL include a sample LiteLLM smoke-test request and a sample successful response.
 
 59. WHEN the final documentation package is reviewed, THEN it SHALL not depend on screenshots as a required acceptance artifact.
+
+60. WHEN the final handoff is reviewed, THEN the deployment evidence is inspected, SHALL include the actual final inference endpoint address and the actual commands used to validate the live cluster.
+
+61. WHEN the final handoff is reviewed, THEN the live environment is validated, SHALL pass cluster health checks, ArgoCD health checks, application reconciliation checks, and the documented smoke test without requiring the reviewer to perform the initial deployment for the agent.

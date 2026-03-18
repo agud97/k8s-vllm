@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: victoriametrics-dashboard-coverage
+  namespace: monitoring
+data:
+  areas: "cluster nodes,kubernetes workloads,kubernetes control plane,cilium,istio,argocd,litellm,kserve/vllm"

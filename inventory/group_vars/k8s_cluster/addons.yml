@@ -1,0 +1,4 @@
+---
+# Keep the bootstrap minimal; higher-level platforms are deployed by ArgoCD later.
+dashboard_enabled: false
+ingress_nginx_enabled: false
