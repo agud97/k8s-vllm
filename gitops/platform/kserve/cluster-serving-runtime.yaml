@@ -20,6 +20,8 @@ spec:
           value: "1"
         - name: VLLM_NO_USAGE_STATS
           value: "1"
+        - name: PYTORCH_CUDA_ALLOC_CONF
+          value: expandable_segments:True
       resources:
         requests:
           cpu: "4"
