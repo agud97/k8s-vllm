@@ -34,6 +34,21 @@ spec:
                 secretKeyRef:
                   name: litellm-auth
                   key: master-key
+            - name: WEBUI_ADMIN_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: openwebui-admin
+                  key: admin-name
+            - name: WEBUI_ADMIN_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: openwebui-admin
+                  key: admin-email
+            - name: WEBUI_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: openwebui-admin
+                  key: admin-password
             - name: ENABLE_OLLAMA_API
               value: "false"
             - name: WEBUI_NAME
