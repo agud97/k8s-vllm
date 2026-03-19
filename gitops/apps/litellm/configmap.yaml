@@ -6,8 +6,13 @@ metadata:
 data:
   config.yaml: |
     model_list:
-      - model_name: qwen35-27b-gptq-int4
+      - model_name: gpt-oss-20b
         litellm_params:
-          model: openai/qwen35-27b-gptq-int4
-          api_base: http://qwen35-27b-gptq-int4-predictor.llm.svc.cluster.local/v1
+          model: openai/gpt-oss-20b
+          api_base: http://gpt-oss-20b-predictor.llm.svc.cluster.local/v1
+          api_key: dummy
+      - model_name: qwen35-9b
+        litellm_params:
+          model: openai/qwen35-9b
+          api_base: http://qwen35-9b-predictor.llm.svc.cluster.local/v1
           api_key: dummy

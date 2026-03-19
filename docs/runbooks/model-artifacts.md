@@ -2,7 +2,9 @@
 
 ## Source And Destination
 
-- Upstream model source: `Qwen/Qwen3.5-27B-GPTQ-Int4`
+- Upstream model sources:
+  - `openai/gpt-oss-20b`
+  - `Qwen/Qwen3.5-9B`
 - Lab storage destination: `s3://$S3_BUCKET/$S3_PREFIX/`
 
 ## Sync Workflow
@@ -17,7 +19,7 @@ make bootstrap
 The script:
 
 1. Reads credentials from `local/s3.env`
-2. Downloads the pinned Hugging Face model locally
+2. Downloads the pinned Hugging Face models locally
 3. Synchronizes model artifacts into the configured S3 prefix
 
 ## Validation

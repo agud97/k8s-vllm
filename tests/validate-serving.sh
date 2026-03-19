@@ -18,19 +18,23 @@ check_s3_config() {
 
 check_litellm_manifests() {
   grep -q '/v1/chat/completions' gitops/apps/litellm/configmap.yaml || { printf 'LiteLLM upstream path missing /v1/chat/completions contract\n' >&2; exit 1; }
-  grep -q 'qwen35-27b-gptq-int4' gitops/apps/litellm/configmap.yaml || { printf 'pinned model alias missing\n' >&2; exit 1; }
+  grep -q 'gpt-oss-20b' gitops/apps/litellm/configmap.yaml || { printf 'gpt-oss-20b alias missing\n' >&2; exit 1; }
+  grep -q 'qwen35-9b' gitops/apps/litellm/configmap.yaml || { printf 'qwen35-9b alias missing\n' >&2; exit 1; }
   printf 'litellm manifest validation passed\n'
 }
 
 check_runtime_manifests() {
-  grep -q 'Qwen/Qwen3.5-27B-GPTQ-Int4' docs/runbooks/model-artifacts.md || { printf 'pinned Hugging Face source missing\n' >&2; exit 1; }
-  grep -q 'runtime: vllm-runtime' gitops/apps/llm-serving/inference-service.yaml || { printf 'InferenceService runtime missing\n' >&2; exit 1; }
+  grep -q 'openai/gpt-oss-20b' docs/runbooks/model-artifacts.md || { printf 'gpt-oss-20b source missing\n' >&2; exit 1; }
+  grep -q 'Qwen/Qwen3.5-9B' docs/runbooks/model-artifacts.md || { printf 'Qwen3.5-9B source missing\n' >&2; exit 1; }
+  grep -q 'runtime: vllm-openai-runtime' gitops/apps/llm-serving/inference-service.yaml || { printf 'Qwen InferenceService runtime missing\n' >&2; exit 1; }
+  grep -q 'runtime: vllm-openai-runtime' gitops/apps/llm-serving/inference-service-gpt-oss-20b.yaml || { printf 'GPT-OSS InferenceService runtime missing\n' >&2; exit 1; }
   printf 'runtime manifest validation passed\n'
 }
 
 check_cluster_runtime() {
   need_cmd kubectl
-  kubectl -n llm get inferenceservice qwen35-27b-gptq-int4 >/tmp/inferenceservice.txt
+  kubectl -n llm get inferenceservice gpt-oss-20b >/tmp/inferenceservice-gpt-oss-20b.txt
+  kubectl -n llm get inferenceservice qwen35-9b >/tmp/inferenceservice-qwen35-9b.txt
   kubectl -n llm get deploy litellm >/tmp/litellm_deploy.txt
   kubectl -n llm get svc litellm >/tmp/litellm_svc.txt
   printf 'cluster serving validation passed\n'

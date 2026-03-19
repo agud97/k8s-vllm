@@ -2,7 +2,7 @@
 set -euo pipefail
 
 prompt='Напиши одно короткое предложение о Kubernetes.'
-model='qwen35-27b-gptq-int4'
+model="${SMOKE_MODEL_ALIAS:-qwen35-9b}"
 
 : "${LITELLM_BASE_URL:?set LITELLM_BASE_URL, for example http://<infra-1-public-ip>:32080}"
 : "${LITELLM_API_KEY:?set LITELLM_API_KEY}"

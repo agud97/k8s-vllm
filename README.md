@@ -138,7 +138,7 @@ make smoke-test
 
 The scripted request uses:
 
-- model alias: `qwen35-27b-gptq-int4`
+- default model alias: `qwen35-9b`
 - prompt: `Напиши одно короткое предложение о Kubernetes.`
 
 Example request:
@@ -148,7 +148,7 @@ curl -H "Authorization: Bearer $LITELLM_API_KEY" \
   -H "Content-Type: application/json" \
   -X POST "$LITELLM_BASE_URL/v1/chat/completions" \
   -d '{
-    "model": "qwen35-27b-gptq-int4",
+    "model": "qwen35-9b",
     "messages": [{"role": "user", "content": "Напиши одно короткое предложение о Kubernetes."}],
     "max_tokens": 64
   }'

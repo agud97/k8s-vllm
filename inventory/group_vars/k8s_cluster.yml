@@ -12,4 +12,4 @@ kube_pods_subnet: 10.233.64.0/18
 # The infra node is the intended public ingress point for phase-1 NodePort exposure.
 public_ingress_host: infra-1
 
-phase1_model_alias: qwen35-27b-gptq-int4
+phase1_model_alias: qwen35-9b

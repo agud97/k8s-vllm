@@ -11,8 +11,11 @@ need_cmd() {
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 S3_ENV_FILE="${ROOT_DIR}/local/s3.env"
-HF_REPO="Qwen/Qwen3.5-27B-GPTQ-Int4"
 WORKDIR="${ROOT_DIR}/bootstrap/cache/model-sync"
+MODEL_REPOS=(
+  "openai/gpt-oss-20b"
+  "Qwen/Qwen3.5-9B"
+)
 
 [[ -f "$S3_ENV_FILE" ]] || { printf 'missing required file: %s\n' "$S3_ENV_FILE" >&2; exit 1; }
 
@@ -36,24 +39,33 @@ export AWS_EC2_METADATA_DISABLED=true
 mkdir -p "$WORKDIR"
 
 printf '[phase] model-sync\n'
-printf '[source] %s\n' "$HF_REPO"
 printf '[destination] s3://%s/%s/\n' "$S3_BUCKET" "$S3_PREFIX"
 
 python3 -m venv "${WORKDIR}/venv"
 # shellcheck disable=SC1091
 source "${WORKDIR}/venv/bin/activate"
 python3 -m pip install --quiet --upgrade pip huggingface_hub
-python3 - <<'PY'
+for repo in "${MODEL_REPOS[@]}"; do
+  safe_repo="${repo//\//__}"
+  target_dir="${WORKDIR}/${safe_repo}"
+  printf '[source] %s\n' "$repo"
+  python3 - <<'PY' "$repo" "$target_dir"
+import sys
 from huggingface_hub import snapshot_download
 
+repo_id = sys.argv[1]
+target_dir = sys.argv[2]
 snapshot_download(
-    repo_id="Qwen/Qwen3.5-27B-GPTQ-Int4",
-    local_dir="bootstrap/cache/model-sync/model",
+    repo_id=repo_id,
+    local_dir=target_dir,
     local_dir_use_symlinks=False,
     resume_download=True,
 )
 PY
-
-aws --no-verify-ssl --endpoint-url "${S3_ENDPOINT}" s3 sync "${WORKDIR}/model/" "s3://${S3_BUCKET}/${S3_PREFIX}/" --delete
+  aws --no-verify-ssl --endpoint-url "${S3_ENDPOINT}" s3 sync \
+    "${target_dir}/" \
+    "s3://${S3_BUCKET}/${S3_PREFIX}/${safe_repo}/" \
+    --delete
+done
 
 printf '[status] model artifacts synchronized successfully\n'

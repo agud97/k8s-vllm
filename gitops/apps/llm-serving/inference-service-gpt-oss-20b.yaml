@@ -1,7 +1,7 @@
 apiVersion: serving.kserve.io/v1beta1
 kind: InferenceService
 metadata:
-  name: qwen35-9b
+  name: gpt-oss-20b
   namespace: llm
   annotations:
     serving.kserve.io/deploymentMode: Standard
@@ -10,7 +10,7 @@ spec:
     minReplicas: 1
     serviceAccountName: llm-model-sa
     nodeSelector:
-      kubernetes.io/hostname: gpu-2
+      kubernetes.io/hostname: gpu-1
     tolerations:
       - key: nvidia.com/gpu
         operator: Equal
@@ -20,7 +20,7 @@ spec:
       modelFormat:
         name: huggingface
       runtime: vllm-openai-runtime
-      storageUri: hf://Qwen/Qwen3.5-9B
+      storageUri: hf://openai/gpt-oss-20b
       resources:
         limits:
           nvidia.com/gpu: "1"
@@ -30,10 +30,9 @@ spec:
           cpu: "4"
           memory: "20Gi"
       args:
-        - --served-model-name=qwen35-9b
+        - --served-model-name=gpt-oss-20b
         - --dtype=float16
-        - --language-model-only
-        - --max-model-len=4096
+        - --max-model-len=2048
         - --gpu-memory-utilization=0.9
         - --trust-remote-code
         - --enforce-eager
