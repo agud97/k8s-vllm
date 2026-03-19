@@ -4,7 +4,7 @@ metadata:
   name: app-litellm
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "28"
+    argocd.argoproj.io/sync-wave: "29"
 spec:
   project: platform
   source:
@@ -18,3 +18,5 @@ spec:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
