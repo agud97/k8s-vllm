@@ -183,3 +183,5 @@ Example successful response shape:
 - [`docs/runbooks/storage.md`](/root/codex/k8s-cloud/docs/runbooks/storage.md)
 - [`docs/runbooks/ingress.md`](/root/codex/k8s-cloud/docs/runbooks/ingress.md)
 - [`docs/runbooks/model-artifacts.md`](/root/codex/k8s-cloud/docs/runbooks/model-artifacts.md)
+- [`HANDOFF.md`](/root/codex/k8s-cloud/HANDOFF.md)
+- [`Release.md`](/root/codex/k8s-cloud/Release.md)
