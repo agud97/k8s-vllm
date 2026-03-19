@@ -60,11 +60,11 @@
 
 23. WHEN the deployed lab environment is inspected for transport settings, THEN the public inference endpoint configuration is reviewed, SHALL permit initial HTTP access without requiring TLS or a custom DNS name.
 
-24. WHEN the phase-1 inference integration is inspected, THEN the LiteLLM upstream configuration is reviewed, SHALL reference exactly one internal OpenAI-compatible upstream endpoint provided by the serving stack.
+24. WHEN the phase-1 inference integration is inspected, THEN the LiteLLM upstream configuration is reviewed, SHALL reference exactly two internal OpenAI-compatible upstream endpoints provided by the serving stack.
 
 24a. WHEN the phase-1 inference integration is inspected, THEN the LiteLLM upstream configuration is reviewed, SHALL target an internal HTTP endpoint exposing `/v1/chat/completions`.
 
-24b. WHEN the LiteLLM model configuration is inspected for phase 1, THEN the configured models are reviewed, SHALL define exactly one pinned model alias for the deployed Qwen model and the smoke test SHALL use that same alias.
+24b. WHEN the LiteLLM model configuration is inspected for phase 1, THEN the configured models are reviewed, SHALL define pinned model aliases for `gpt-oss-20b` and `qwen35-9b`, and the default smoke test SHALL use `qwen35-9b`.
 
 25. WHEN the selected `NodePort` on `infra-1` is blocked by firewall or provider networking, THEN external inference validation is executed, SHALL fail with an observable endpoint reachability error.
 
@@ -74,15 +74,15 @@
 
 26a. WHEN final acceptance is evaluated, THEN the live cluster is inspected, SHALL show that KServe, LiteLLM, and VictoriaMetrics are actually installed and reconciled in the cluster rather than only present in the repository.
 
-27. WHEN the deployment configuration is inspected, THEN the model source definition is reviewed, SHALL reference `Qwen/Qwen3.5-27B-GPTQ-Int4` as the pinned model source.
+27. WHEN the deployment configuration is inspected, THEN the model source definition is reviewed, SHALL reference `openai/gpt-oss-20b` and `Qwen/Qwen3.5-9B` as the pinned model sources.
 
 28. WHEN the selected KServe, Knative, or Istio implementation requires additional dependencies such as `cert-manager`, THEN the deployed platform is inspected, SHALL match the conditionally enabled dependencies declared in the repository dependency matrix.
 
-29. WHEN the initial lab-serving configuration is applied, THEN the runtime topology is inspected, SHALL use a single-replica, non-distributed `KServe InferenceService` deployment without requiring true multi-node inference across both GPU nodes.
+29. WHEN the initial lab-serving configuration is applied, THEN the runtime topology is inspected, SHALL use two single-replica, non-distributed `KServe InferenceService` deployments pinned one-to-one to the two GPU nodes without requiring true multi-node inference across both GPU nodes.
 
-30. WHEN the target model deployment reaches a healthy state, THEN Kubernetes workload resources are inspected, SHALL show the serving workload scheduled only onto GPU-capable nodes.
+30. WHEN the target model deployments reach a healthy state, THEN Kubernetes workload resources are inspected, SHALL show the serving workloads scheduled only onto GPU-capable nodes.
 
-31. WHEN the target model deployment reaches a healthy state, THEN cluster GPU resources are inspected, SHALL show NVIDIA GPU capacity discoverable by Kubernetes workloads.
+31. WHEN the target model deployments reach a healthy state, THEN cluster GPU resources are inspected, SHALL show NVIDIA GPU capacity discoverable by Kubernetes workloads.
 
 31a. WHEN the GPU discovery components are inspected in the lab environment, THEN the platform configuration is reviewed, SHALL use the NVIDIA Device Plugin and SHALL not depend on NVIDIA GPU Operator.
 
@@ -90,9 +90,9 @@
 
 33. WHEN the smoke-test request uses a short neutral prompt such as "Напиши одно короткое предложение о Kubernetes.", THEN the request is processed by the deployed model, SHALL return non-empty model-generated text rather than an infrastructure error.
 
-34. WHEN model startup fails because the selected artifact or runtime settings are incompatible with vLLM, THEN the deployment attempt occurs, SHALL fail observably instead of reporting the model as successfully ready.
+34. WHEN model startup fails because a selected artifact or runtime setting is incompatible with vLLM, THEN the deployment attempt occurs, SHALL fail observably instead of reporting that model as successfully ready.
 
-35. WHEN only one GPU node is available or one GPU node becomes unavailable before a GPU-dependent serving deployment, THEN the serving workload is reconciled, SHALL not falsely report a healthy ready state if the required GPU scheduling constraints cannot be met.
+35. WHEN only one GPU node is available or one GPU node becomes unavailable before a GPU-dependent serving deployment, THEN the serving workloads are reconciled, SHALL not falsely report a healthy ready state if the required GPU scheduling constraints cannot be met.
 
 36. WHEN the phase-1 model deployment is started in an otherwise healthy cluster, THEN readiness is measured from deployment start, SHALL reach the documented ready state within 30 minutes.
 

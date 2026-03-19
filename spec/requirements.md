@@ -2,7 +2,7 @@
 
 ## Context Summary
 
-Feature request describes a non-managed Kubernetes cluster in a public cloud with at least two GPU nodes based on NVIDIA A5000, deployment of a Qwen 3.5 model through KServe + vLLM, and GitOps-based in-cluster management through ArgoCD. The request also mentions available S3 storage, absence of network block storage, possible use of OpenEBS on local disks, and an expectation that the agent performs the server and Kubernetes setup work.
+Feature request describes a non-managed Kubernetes cluster in a public cloud with at least two GPU nodes based on NVIDIA A5000, deployment of LLM workloads through KServe + vLLM, and GitOps-based in-cluster management through ArgoCD. The request also mentions available S3 storage, absence of network block storage, possible use of OpenEBS on local disks, and an expectation that the agent performs the server and Kubernetes setup work.
 
 Important constraint: the source text mixes stakeholder requirements with architecture recommendations generated during a discussion. Recommendations must not be treated as approved requirements unless explicitly confirmed.
 
@@ -32,9 +32,11 @@ Important constraint: the source text mixes stakeholder requirements with archit
    - model artifacts may then be uploaded to the available S3 storage
    - OpenEBS LocalPV may be used for internal cluster stateful workloads
 
-10. Target model is fixed as Qwen3.5-27B in Q4 quantized form.
+10. Phase 1 target models are fixed as:
+   - `openai/gpt-oss-20b` on one GPU node
+   - `Qwen/Qwen3.5-9B` on the second GPU node
 
-11. Phase 1 serving must use a single-replica, non-distributed `KServe InferenceService` deployment.
+11. Phase 1 serving must use two single-replica, non-distributed `KServe InferenceService` deployments, one per target model and GPU node.
 
 12. The architecture should preserve a future path toward true multi-node inference across two GPU nodes.
 
@@ -63,7 +65,7 @@ Important constraint: the source text mixes stakeholder requirements with archit
 
 20. External access to model inference must go through LiteLLM deployed in the same Kubernetes cluster.
 
-20a. For phase 1, LiteLLM must call a single internal OpenAI-compatible upstream endpoint provided by the vLLM-based serving stack.
+20a. For phase 1, LiteLLM must call internal OpenAI-compatible upstream endpoints provided by the vLLM-based serving stack.
 
 21. VictoriaMetrics Kubernetes stack must be deployed in the same cluster for metrics collection, storage, and visualization.
 
@@ -79,7 +81,9 @@ Important constraint: the source text mixes stakeholder requirements with archit
 
 27. There is no hard budget limit; infrastructure sizing should be based on stable cluster operation and successful model serving.
 
-28. The model source must use the Hugging Face repository `Qwen/Qwen3.5-27B-GPTQ-Int4`, pinned in the repository and operator documentation.
+28. The model sources must use these pinned Hugging Face repositories in the repository and operator documentation:
+   - `openai/gpt-oss-20b`
+   - `Qwen/Qwen3.5-9B`
 
 29. The current repository is the main deployment and GitOps repository for this project.
 
@@ -147,10 +151,10 @@ Important constraint: the source text mixes stakeholder requirements with archit
 42. GPU resource discovery for the lab environment must use host-installed NVIDIA drivers, NVIDIA container runtime support, and the NVIDIA Device Plugin. NVIDIA GPU Operator is out of scope.
 
 43. The phase-1 LiteLLM upstream contract is:
-   - LiteLLM calls one internal HTTP service
-   - that service exposes an OpenAI-compatible `/v1/chat/completions` API
-   - LiteLLM uses one pinned model alias for the deployed Qwen model
-   - the smoke test uses only that pinned model alias
+   - LiteLLM calls internal HTTP services exposed by the serving stack
+   - each upstream exposes an OpenAI-compatible `/v1/chat/completions` API
+   - LiteLLM uses pinned model aliases for both deployed models
+   - the default smoke test uses the pinned `qwen35-9b` alias
 
 44. The repository must contain a pinned dependency matrix that declares the selected versions of core platform components and any conditionally enabled dependencies for the chosen version set.
 
@@ -225,7 +229,7 @@ No unresolved missing information remains. The remaining implementation risks ar
 
 21. The current cloud environment permits external access to a `NodePort`-based ingress path on `infra-1`.
 
-22. `Qwen/Qwen3.5-27B-GPTQ-Int4` is assumed to be the target artifact for vLLM-based deployment.
+22. `openai/gpt-oss-20b` and `Qwen/Qwen3.5-9B` are assumed to be the target artifacts for vLLM-based deployment.
 
 ## Edge Cases
 

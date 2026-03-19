@@ -145,7 +145,7 @@ plan:
       tasks:
         - id: task-4.1
           name: "Implement model artifact synchronization"
-          description: "Create the rerunnable workflow that stages `Qwen/Qwen3.5-27B-GPTQ-Int4` artifacts into S3 and supplies the serving configuration with the correct location."
+          description: "Create the rerunnable workflow that stages `openai/gpt-oss-20b` and `Qwen/Qwen3.5-9B` artifacts into S3 and supplies the serving configuration with the correct locations."
           artifact: "bootstrap/model-sync scripts and GitOps values for S3-backed model source"
           depends_on:
             - task-1.2
@@ -154,7 +154,7 @@ plan:
           validation: "Model sync is actually executed, succeeds with valid S3 credentials, and fails observably when credentials or endpoint settings are invalid."
         - id: task-4.2
           name: "Implement KServe and vLLM serving stack"
-          description: "Deploy the phase-1 single-replica non-distributed KServe InferenceService using the pinned model source and required version-set dependencies."
+          description: "Deploy the phase-1 pair of single-replica non-distributed KServe InferenceServices, one for `gpt-oss-20b` and one for `qwen35-9b`, using the pinned model sources and required version-set dependencies."
           artifact: "gitops/platform/kserve and gitops/apps/llm-serving manifests"
           depends_on:
             - task-3.4
@@ -162,7 +162,7 @@ plan:
           validation: "The serving stack is actually deployed to the live cluster, becomes healthy within the acceptance window, and the workload schedules only on GPU-capable nodes."
         - id: task-4.3
           name: "Implement LiteLLM integration and public access"
-          description: "Deploy LiteLLM with one pinned model alias, one internal OpenAI-compatible upstream endpoint, native API key auth, and NodePort-based public access."
+          description: "Deploy LiteLLM with pinned model aliases for `gpt-oss-20b` and `qwen35-9b`, internal OpenAI-compatible upstream endpoints for both predictors, native API key auth, and NodePort-based public access."
           artifact: "gitops/apps/litellm manifests and sealed secrets for API keys"
           depends_on:
             - task-4.2

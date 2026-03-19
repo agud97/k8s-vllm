@@ -61,8 +61,8 @@ Relevant specs:
 - Reusable configuration MUST be parameterized through values files, inventory variables, or environment files rather than duplicated manifests.
 - ArgoCD applications MUST express dependency order declaratively using supported GitOps mechanisms such as sync waves, app-of-apps ordering, or equivalent reconciliation-safe constructs.
 - The public inference entrypoint MUST terminate at LiteLLM and MUST treat KServe or vLLM as internal upstream services.
-- LiteLLM MUST integrate with the serving layer through one internal OpenAI-compatible upstream endpoint for phase 1.
-- The phase-1 LiteLLM upstream contract MUST use one internal HTTP endpoint exposing `/v1/chat/completions`, with one pinned model alias used by LiteLLM and by the smoke test.
+- LiteLLM MUST integrate with the serving layer through internal OpenAI-compatible upstream endpoints for phase 1.
+- The phase-1 LiteLLM upstream contract MUST use internal HTTP endpoints exposing `/v1/chat/completions`, with pinned model aliases for `gpt-oss-20b` and `qwen35-9b`; the default smoke test alias MUST be `qwen35-9b`.
 - Secret material consumed by workloads MUST enter the cluster through Sealed Secrets and standard Kubernetes Secrets derived from them.
 - The design MUST preserve an upgrade path to future multi-node inference without forcing a distributed serving implementation in phase 1.
 - Platform components MUST be deployable independently enough to support failure isolation and targeted reconciliation.
@@ -95,8 +95,8 @@ Relevant specs:
 - GitOps control plane MUST be ArgoCD.
 - Secret management for the lab environment MUST use Sealed Secrets.
 - Model serving MUST use KServe with vLLM-compatible serving configuration.
-- Phase 1 model serving MUST use a single-replica, non-distributed `KServe InferenceService` topology.
-- The model source MUST be pinned to `Qwen/Qwen3.5-27B-GPTQ-Int4`.
+- Phase 1 model serving MUST use two single-replica, non-distributed `KServe InferenceService` workloads, one pinned to each GPU node.
+- The model sources MUST be pinned to `openai/gpt-oss-20b` and `Qwen/Qwen3.5-9B`.
 - Public inference access MUST go through LiteLLM using LiteLLM native API key authentication.
 - Observability MUST use VictoriaMetrics Kubernetes stack with 7-day retention and 100Gi persistent storage.
 - Persistent storage for in-cluster stateful workloads MUST use OpenEBS LocalPV where persistence is required in this lab environment.
