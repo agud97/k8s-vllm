@@ -33,8 +33,7 @@ spec:
         - --dtype=float16
         - --quantization=gptq_marlin
         - --language-model-only
-        - --max-model-len=2048
-        - --gpu-memory-utilization=0.85
-        - --cpu-offload-gb=10
+        - --max-model-len=1024
+        - --gpu-memory-utilization=0.92
         - --trust-remote-code
         - --enforce-eager
