@@ -27,6 +27,7 @@ Fill these files before running bootstrap:
 
 - `local/hosts.yml`
 - `local/s3.env`
+- `local/llm.env`
 
 They are ignored by Git.
 
@@ -80,10 +81,22 @@ make validate-static
 ./bootstrap/sealed-secrets-bootstrap.sh
 ```
 
-8. Sync model artifacts to S3:
+8. Apply LLM application secrets:
+
+```bash
+./bootstrap/app-secrets.sh
+```
+
+9. Sync model artifacts to S3:
 
 ```bash
 ./bootstrap/model-sync.sh
+```
+
+10. Let ArgoCD reconcile platform and applications:
+
+```bash
+kubectl --kubeconfig local/runtime/admin.conf get applications -n argocd
 ```
 
 ## Validation Commands
@@ -158,6 +171,11 @@ Example successful response shape:
   ]
 }
 ```
+
+## Open WebUI
+
+- URL: `http://<infra-1-public-ip>:32081`
+- Admin credentials are sourced from `local/llm.env` and bootstrapped via `./bootstrap/app-secrets.sh`
 
 ## Runbooks
 

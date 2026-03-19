@@ -16,6 +16,7 @@ print_common_prereqs() {
 Required local inputs:
   - local/hosts.yml
   - local/s3.env
+  - local/llm.env
 
 Reference files:
   - docs/dependency-matrix.yaml
@@ -37,34 +38,48 @@ EOF
     ;;
   bootstrap)
     require_file "local/hosts.yml"
+    require_file "local/s3.env"
+    require_file "local/llm.env"
     cat <<'EOF'
 [phase] bootstrap
-[next] implement host preparation and Kubespray automation in phase-2
-[status] repository entrypoint is ready; cluster bootstrap logic not implemented yet
+[steps]
+  1. ./bootstrap/render-inventory.sh
+  2. ./bootstrap/host-prep.sh
+  3. ./bootstrap/cluster-bootstrap.sh
+  4. ./bootstrap/gpu-prep.sh
+[status] bootstrap entrypoint prerequisites satisfied
 EOF
     ;;
   deploy)
     require_file "local/hosts.yml"
     require_file "local/s3.env"
+    require_file "local/llm.env"
     cat <<'EOF'
 [phase] deploy
-[next] implement ArgoCD, platform, and serving manifests in later phases
-[status] deployment entrypoint is ready; GitOps deployment logic not implemented yet
+[steps]
+  1. ./bootstrap/argocd-bootstrap.sh
+  2. ./bootstrap/sealed-secrets-bootstrap.sh
+  3. ./bootstrap/app-secrets.sh
+  4. ./bootstrap/model-sync.sh
+[status] deploy entrypoint prerequisites satisfied
 EOF
     ;;
   validate)
     cat <<'EOF'
 [phase] validate
-[next] implement static and cluster validation scripts in later phases
-[status] validation entrypoint is ready; validation suite not implemented yet
+[steps]
+  1. make validate-static
+  2. ./tests/validate-cluster.sh all
+  3. ./tests/validate-platform.sh all
+  4. ./tests/validate-serving.sh runtime
+[status] validation entrypoint prerequisites satisfied
 EOF
     ;;
   smoke-test)
-    require_file "local/s3.env"
+    require_file "local/llm.env"
     cat <<'EOF'
 [phase] smoke-test
-[next] implement LiteLLM smoke-test automation in phase-5
-[status] smoke-test entrypoint is ready; smoke test not implemented yet
+[status] smoke test is implemented in ./tests/smoke-test.sh
 EOF
     ;;
   *)
