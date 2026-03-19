@@ -1,3 +1,3 @@
 # Docs
 
-Operator runbooks, dependency references, and implementation-facing documentation.
+Operator runbooks, dependency references, architecture, and implementation-facing documentation.

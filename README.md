@@ -179,6 +179,7 @@ Example successful response shape:
 
 ## Runbooks
 
+- [`docs/architecture.md`](/root/codex/k8s-cloud/docs/architecture.md)
 - [`docs/runbooks/sealed-secrets.md`](/root/codex/k8s-cloud/docs/runbooks/sealed-secrets.md)
 - [`docs/runbooks/storage.md`](/root/codex/k8s-cloud/docs/runbooks/storage.md)
 - [`docs/runbooks/ingress.md`](/root/codex/k8s-cloud/docs/runbooks/ingress.md)
