@@ -38,8 +38,8 @@
 |------|--------|-------|
 | task-4.1 | → IN_PROGRESS | GitOps serving manifests now point to S3-backed model URIs; `gpt-oss` artifacts are complete and `qwen` required a second rollout after its large shard files appeared in S3 |
 | task-4.2 | → IN_PROGRESS | KServe/vLLM serving recovered from NVSwitch CUDA initialization failures on `sxmgpu`; `gpt-oss-20b` is Ready and `qwen35-9b` is reloading from the now-complete S3 prefix |
-| task-4.3 | ✓ COMPLETE | LiteLLM is live on the public NodePort path with API-key auth and internal upstream routing |
-| task-4.4 | → IN_PROGRESS | VictoriaMetrics stack, extras, NVIDIA DCGM exporter, and LiteLLM Prometheus metrics are under live GitOps reconciliation; Grafana NodePort and datasource DNS alignment were fixed for the live `k8s-vllm-lab` cluster domain while final serving validation still waits on S3-backed model availability |
+| task-4.3 | ✓ COMPLETE | LiteLLM is live on the public NodePort path with API-key auth; current live topology uses GitOps-managed public predictor upstreams plus anti-reasoning defaults for `gpt-oss-20b` and `qwen35-9b` |
+| task-4.4 | → IN_PROGRESS | VictoriaMetrics stack, extras, NVIDIA DCGM exporter, and LiteLLM Prometheus metrics are under live GitOps reconciliation; Grafana NodePort, datasource DNS alignment, and public GPU telemetry scrape fallback were fixed for the live `k8s-vllm-lab` cluster domain |
 | task-4.5 | · NOT_STARTED | Full live integration validation waits on healthy serving and observability convergence |
 
 ### Phase 5: Final Validation And Operator Documentation
@@ -66,3 +66,4 @@
 - Implementation status was reset from scaffold completion to live execution after the specification package was updated to require an actually deployed cluster rather than repository artifacts alone.
 - Approved live topology deviation on `2026-03-25`: retired `gpu-1` and `gpu-2` were replaced by one active GPU worker `sxmgpu` with `8x NVIDIA H200`; phase-1 model placement is temporarily co-located on the replacement node until another active GPU worker exists.
 - Observability delivery was split into a main `VictoriaMetrics` chart application plus a separate GitOps extras application so `VMServiceScrape` resources can reconcile after CRDs exist and the operator admission webhook is available.
+- Approved operational deviation on `2026-03-26`: because `sxmgpu` cannot route to the private `InternalIP` addresses advertised by the other nodes, serving and GPU telemetry currently use GitOps-managed public fallback endpoints rather than normal cross-node pod-network paths.

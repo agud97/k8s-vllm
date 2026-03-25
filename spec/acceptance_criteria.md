@@ -22,6 +22,8 @@
 
 8a. WHEN a GPU worker is replaced after the initial bootstrap, THEN the documented node-replacement workflow is executed, SHALL add the replacement worker to the live cluster without requiring destruction of the control plane or a full cluster rebuild.
 
+8b. WHEN a replacement GPU worker is declared ready for serving use, THEN live Cilium health and workload reachability are inspected, SHALL demonstrate either healthy cross-node pod networking to the GPU worker or an explicitly documented GitOps-managed public-endpoint fallback for serving and GPU telemetry.
+
 ## GitOps And Repository Behavior
 
 9. WHEN the repository is inspected before deployment, THEN the operator reviews the repository contents, SHALL find deployment automation, GitOps manifests, pinned component versions, and operator-facing instructions in the same repository.
@@ -59,6 +61,8 @@
 21. WHEN the public inference endpoint is called with an invalid API key, THEN a client request is sent to LiteLLM, SHALL be rejected with an authorization failure response.
 
 22. WHEN the public inference endpoint is called with a valid LiteLLM API key, THEN a supported inference request is sent, SHALL be accepted and routed through LiteLLM to the underlying model-serving path.
+
+22a. WHEN the phase-1 reasoning-capable models are called through LiteLLM with normal short-response prompts, THEN the returned assistant message SHALL contain normal `content` text rather than only reasoning or thinking metadata.
 
 23. WHEN the deployed lab environment is inspected for transport settings, THEN the public inference endpoint configuration is reviewed, SHALL permit initial HTTP access without requiring TLS or a custom DNS name.
 
@@ -140,6 +144,8 @@
 
 52a. WHEN GPU observability is reviewed after deployment, THEN the live cluster resources are inspected, SHALL show a GPU metrics exporter running on active GPU worker nodes and exposing scrapeable NVIDIA telemetry to the observability stack.
 
+52b. WHEN the active GPU worker is reachable only through the public-endpoint fallback path, THEN the observability stack is reviewed, SHALL scrape GPU telemetry successfully through the GitOps-managed public target rather than depending on broken cross-node pod-network access.
+
 53. WHEN the operator opens the observability dashboards, THEN dashboard coverage is reviewed, SHALL provide dashboard coverage for these monitored areas: cluster nodes, Kubernetes workloads, Kubernetes control plane, Cilium, Istio, ArgoCD, LiteLLM, and KServe or vLLM.
 
 53a. WHEN the observability dashboards are opened after reconciliation, THEN the Grafana datasources are exercised, SHALL resolve the in-cluster VictoriaMetrics service using the actual cluster DNS domain rather than a hard-coded `cluster.local` assumption.
@@ -155,6 +161,8 @@
 57. WHEN the final documentation is reviewed, THEN it SHALL include verification commands for cluster health, ArgoCD status, and inference validation.
 
 57a. WHEN the final documentation is reviewed for recovery coverage, THEN it SHALL include a GPU node replacement runbook covering worker join, Cilium recovery, NVIDIA runtime recovery, and stale-node removal.
+
+57b. WHEN the final documentation is reviewed for repeatability, THEN it SHALL explain the difference between public-IP worker join and private-IP east-west cluster reachability, and SHALL document the model-specific LiteLLM defaults required to avoid reasoning-only responses in the phase-1 UI.
 
 58. WHEN the final documentation is reviewed, THEN it SHALL include a sample LiteLLM smoke-test request and a sample successful response.
 

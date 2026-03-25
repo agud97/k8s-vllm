@@ -26,6 +26,7 @@ Target roles:
 Important inventory note:
 
 - if worker nodes can reach the control plane only through public IPs, set `access_ip` for `cp-1`, `cp-2`, and `cp-3` to those public IPs in [`local/hosts.yml`](local/hosts.yml)
+- if a GPU worker cannot reach the cluster-node private `InternalIP` addresses used by Kubernetes and `Cilium`, do not assume a successful `kubeadm join` means the node is production-ready; verify cross-node pod networking before enabling serving and observability
 
 ## 1. Fill Local Files
 
@@ -117,6 +118,25 @@ kubectl --kubeconfig local/runtime/admin.conf describe node gpu-2 | grep -A3 Cap
 Expected result:
 
 - `nvidia.com/gpu` is visible on every host in the `gpu` group
+
+Cross-node networking validation:
+
+```bash
+kubectl --kubeconfig local/runtime/admin.conf get nodes -o wide
+kubectl --kubeconfig local/runtime/admin.conf -n kube-system exec ds/cilium -- cilium-dbg node list
+kubectl --kubeconfig local/runtime/admin.conf -n kube-system exec ds/cilium -- cilium status --verbose
+```
+
+Expected result:
+
+- every node listed by `cilium-dbg node list` is reachable from every other node
+- no GPU node depends on unreachable private `192.168.x.x` addresses for host or endpoint connectivity
+
+Fallback if private node IPs are unreachable from the GPU node:
+
+- keep `LiteLLM` upstreams on the GitOps-managed public NodePort services for the predictors
+- keep `dcgm-exporter` scraping on the GitOps-managed public `VMStaticScrape`
+- treat this as an environment limitation and record it in handoff docs
 
 Critical validation:
 
@@ -211,6 +231,9 @@ Expected target state:
 - `litellm` pod -> `Running`
 - `openwebui` pod -> `Running`
 - predictors scheduled only on currently active GPU nodes
+- `LiteLLM` model defaults preserve plain-text responses:
+  - `gpt-oss-20b` must keep `include_reasoning: false`
+  - `qwen35-9b` must keep `chat_template_kwargs.enable_thinking: false`
 
 If GPU nodes were replaced after initial bootstrap:
 

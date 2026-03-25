@@ -260,6 +260,10 @@ No unresolved missing information remains. The remaining implementation risks ar
 
 25. The Kubernetes cluster DNS domain may differ from `cluster.local` and must be treated as environment-specific configuration shared consistently between Kubespray inventory and GitOps manifests that reference in-cluster service FQDNs.
 
+26. Some replacement GPU workers may be reachable only over public IP space and may not have L3 reachability to the private `InternalIP` addresses selected by Kubernetes for the rest of the cluster.
+
+27. Reasoning-capable phase-1 models may require explicit `LiteLLM` defaults to suppress reasoning-only or thinking-style responses in `Open WebUI`.
+
 ## Edge Cases
 
 1. Only one GPU node is available initially or one GPU node fails after deployment.
@@ -306,6 +310,12 @@ Impact: an adapter pattern, OpenAI-compatible routing assumptions, or custom Lit
 
 14. VictoriaMetrics storage on LocalPV is undersized for default scrape volume.
 Impact: observability stack may become unstable or exhaust disk unless retention and resource limits are tuned for lab use.
+
+15. A replacement GPU worker can join the cluster over public API access but still fail east-west pod networking because other nodes advertise unreachable private `InternalIP` addresses.
+Impact: `LiteLLM`, `Open WebUI`, `vmagent`, and other workloads may fail against otherwise `Ready` GPU nodes unless either private L3 reachability exists or GitOps-managed public endpoints are used as an explicit fallback.
+
+16. Reasoning-capable upstreams can return `reasoning` or thinking output instead of a normal short assistant message when clients use low token limits or default chat templates.
+Impact: end users may perceive the model as hanging or returning empty output unless model-specific `LiteLLM` defaults are pinned.
 
 ## Clarifying Questions
 

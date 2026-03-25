@@ -105,6 +105,10 @@ Alternative alias available through `LiteLLM`:
 
 - `llm` namespace creation must remain ordered before `LiteLLM` and `Open WebUI` application sync. This is enforced through `ArgoCD` sync waves and `CreateNamespace=true`.
 - if a worker can reach the control plane only through public IPs, `local/hosts.yml` must set `access_ip` for `cp-1`, `cp-2`, and `cp-3`; otherwise Kubespray renders worker-side `nginx-proxy` upstreams to unreachable private IPs
+- public `access_ip` values solve worker join only; they do not guarantee healthy `Cilium` east-west traffic if the replacement GPU node cannot route to cluster-node private `InternalIP` addresses
+- when that private-network reachability is absent, keep the GitOps fallback topology in place:
+  - `LiteLLM` upstreams use public predictor NodePorts on `sxmgpu`
+  - `dcgm-exporter` is scraped through the public `VMStaticScrape` target
 - replacement GPU nodes may join successfully but remain broken until `cilium-operator` is running on live nodes and the `CiliumNode` object has a populated `spec.ipam.podCIDRs`
 - after NVIDIA toolkit configuration, `containerd` must expose `default_runtime_name = "nvidia"` for GPU-device-plugin pods to see NVML correctly
 - NVSwitch hosts such as `8x H200` systems also need `nvidia-fabricmanager`; `gpu-prep` must finish with `nvidia-smi -q` showing `Fabric -> State: Completed` and `Status: Success`
@@ -116,6 +120,9 @@ Alternative alias available through `LiteLLM`:
   - `openwebui-admin`
 - `ClusterServingRuntime vllm-openai-runtime` must not hard-code `--served-model-name`; each `InferenceService` passes its own model name.
 - `Open WebUI` is configured to use internal `LiteLLM` and does not expose secrets via Git.
+- `LiteLLM` must preserve model-specific anti-reasoning defaults for clean UI responses:
+  - `gpt-oss-20b`: `include_reasoning: false`, `reasoning_effort: low`, `allowed_openai_params: [reasoning_effort]`
+  - `qwen35-9b`: `chat_template_kwargs.enable_thinking: false`
 
 ## Fast Recovery Checks
 

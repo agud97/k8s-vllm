@@ -28,10 +28,15 @@ check_static() {
   grep -q 'kind: VMServiceScrape' gitops/platform/victoriametrics/vmservicescrape-argocd.yaml || { printf 'argocd scrape missing\n' >&2; exit 1; }
   grep -q 'kind: VMServiceScrape' gitops/platform/victoriametrics/vmservicescrape-kserve-controller.yaml || { printf 'kserve scrape missing\n' >&2; exit 1; }
   grep -q 'kind: VMServiceScrape' gitops/platform/victoriametrics/vmservicescrape-litellm.yaml || { printf 'litellm scrape missing\n' >&2; exit 1; }
+  grep -q 'kind: VMStaticScrape' gitops/platform/victoriametrics/vmstaticscrape-dcgm-exporter-public.yaml || { printf 'public dcgm static scrape missing\n' >&2; exit 1; }
+  grep -q '32094' gitops/platform/victoriametrics/vmstaticscrape-dcgm-exporter-public.yaml || { printf 'public dcgm scrape target missing\n' >&2; exit 1; }
   grep -q 'grafana_dashboard: "1"' gitops/platform/victoriametrics/dashboard-gpu-overview.yaml || { printf 'gpu dashboard label missing\n' >&2; exit 1; }
   grep -q 'grafana_dashboard: "1"' gitops/platform/victoriametrics/dashboard-litellm-overview.yaml || { printf 'litellm dashboard label missing\n' >&2; exit 1; }
   grep -q 'grafana_dashboard: "1"' gitops/platform/victoriametrics/dashboard-llm-platform-overview.yaml || { printf 'llm platform dashboard label missing\n' >&2; exit 1; }
   grep -q 'prometheus' gitops/apps/litellm/configmap.yaml || { printf 'litellm prometheus callback missing\n' >&2; exit 1; }
+  grep -q 'include_reasoning: false' gitops/apps/litellm/configmap.yaml || { printf 'gpt-oss reasoning suppression missing\n' >&2; exit 1; }
+  grep -q 'allowed_openai_params:' gitops/apps/litellm/configmap.yaml || { printf 'gpt-oss allowed_openai_params missing\n' >&2; exit 1; }
+  grep -q 'enable_thinking: false' gitops/apps/litellm/configmap.yaml || { printf 'qwen thinking suppression missing\n' >&2; exit 1; }
   grep -q 'chart: dcgm-exporter' gitops/root/app-infra-dcgm-exporter.yaml || { printf 'dcgm exporter chart missing\n' >&2; exit 1; }
   printf 'observability static validation passed\n'
 }

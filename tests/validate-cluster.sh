@@ -31,6 +31,11 @@ for name in required:
     if not hosts[name].get("ansible_host"):
       print(f"host {name} is missing ansible_host", file=sys.stderr)
       sys.exit(1)
+for name in required:
+    if name in ("cp-1", "cp-2", "cp-3"):
+        if not hosts[name].get("access_ip"):
+            print(f"control-plane host {name} is missing access_ip", file=sys.stderr)
+            sys.exit(1)
 print("host inventory validation passed")
 PY
 }

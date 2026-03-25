@@ -74,6 +74,9 @@ Relevant specs:
 - Component delivery is not complete until the corresponding live component is installed and validated in the target cluster.
 - Recovery logic for GPU node replacement MUST account for Cilium operator placement, worker-side API reachability, and NVIDIA runtime configuration rather than assuming a pristine first-bootstrap path.
 - Recovery logic and steady-state validation for NVSwitch-based GPU workers MUST account for `nvidia-fabricmanager`, because `nvidia-smi` visibility alone is insufficient to prove that CUDA workloads will initialize successfully.
+- Recovery logic for replacement GPU workers MUST distinguish between successful `kubeadm join` and healthy cross-node pod networking; a `Ready` node is not sufficient evidence if `Cilium` host or endpoint health still depends on unreachable private `InternalIP` addresses.
+- The implementation MUST preserve a GitOps-managed fallback path for GPU serving and GPU observability over public endpoints when the environment cannot provide private L3 reachability from replacement GPU workers to existing node `InternalIP` addresses.
+- LiteLLM configuration for reasoning-capable upstream models MUST pin model-specific defaults that produce normal assistant text in phase-1 UX, rather than exposing raw reasoning or thinking output to `Open WebUI`.
 
 ### SHOULD
 
@@ -190,6 +193,8 @@ Relevant specs:
 - observability stack DNS-domain alignment for in-cluster datasources and callbacks
 - Static tests MUST run without requiring access to the target cluster.
 - Static tests MUST detect cluster-DNS hard-coding in operator-managed manifests when the inventory declares a non-default DNS domain.
+- Static tests MUST detect missing `LiteLLM` anti-reasoning defaults for `gpt-oss-20b` and `qwen35-9b`.
+- Static tests MUST detect the absence of the public GPU telemetry scrape path when the repository declares the public-endpoint fallback topology.
 - Post-deployment validation MUST verify:
   - all six nodes are present and Ready
   - Cilium is active
@@ -208,6 +213,7 @@ Relevant specs:
 - Post-deployment validation MUST be actually executed before completion is claimed.
 - The implementation MUST produce or preserve a usable kubeconfig or equivalent cluster access path for post-deployment validation.
 - Post-bootstrap documentation MUST describe an alternate SSH- or tunnel-based cluster access path when the generated kubeconfig is localhost-scoped and not directly usable from the operator machine.
+- Post-bootstrap documentation MUST describe the difference between worker join reachability and full east-west pod-network reachability for replacement GPU nodes.
 
 ### SHOULD
 

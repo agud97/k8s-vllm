@@ -99,6 +99,15 @@ make validate-static
 kubectl --kubeconfig local/runtime/admin.conf get applications -n argocd
 ```
 
+## Critical Bootstrap Lessons
+
+- GPU workers must have L3 reachability to the `InternalIP` addresses of every cluster node. Public `access_ip` values are enough for `kubeadm join`, but they are not enough to guarantee healthy cross-node pod networking with `Cilium`.
+- If a replacement GPU node cannot reach control-plane or infra-node private `InternalIP` addresses, treat that as a bootstrap blocker for normal in-cluster east-west traffic. Either place the node onto the same private network or explicitly route serving and observability traffic through GitOps-managed public endpoints.
+- `LiteLLM` must carry model-specific defaults for reasoning-capable models:
+  - `gpt-oss-20b`: `include_reasoning: false`
+  - `qwen35-9b`: `chat_template_kwargs.enable_thinking: false`
+- `dcgm-exporter` on public-only GPU workers must be scraped through the GitOps-managed public endpoint if the observability stack cannot reliably reach the GPU pod CIDR.
+
 ## Validation Commands
 
 Static:
@@ -176,6 +185,7 @@ Example successful response shape:
 
 - URL: `http://<infra-1-public-ip>:32081`
 - Admin credentials are sourced from `local/llm.env` and bootstrapped via `./bootstrap/app-secrets.sh`
+- If models appear in the selector but replies look empty, inspect [`gitops/apps/litellm/configmap.yaml`](gitops/apps/litellm/configmap.yaml) first; reasoning-capable upstreams must have the repository-pinned anti-reasoning defaults applied through `LiteLLM`
 
 ## Grafana
 

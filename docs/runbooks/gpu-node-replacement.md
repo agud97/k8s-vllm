@@ -51,8 +51,11 @@ Important inventory lessons:
 
 - the new node must be placed into `kube_node` and `gpu`
 - control-plane nodes must have explicit `access_ip` when workers join over public IPs
+- public `access_ip` values fix worker join and worker-side `nginx-proxy`, but they do not change the node `InternalIP` selected by kubelet
 - host-specific SSH users must not be overridden by a global `ansible_user: root`
 - the cluster DNS domain must be explicit in inventory and reused by GitOps manifests that build service FQDNs; assuming `cluster.local` will break Grafana and other in-cluster clients on clusters whose DNS domain follows `cluster_name`
+- if the replacement GPU node cannot route to other nodes' private `InternalIP` addresses, `Cilium` host and endpoint health will remain degraded even after a successful join
+- in that environment, serving and GPU observability need explicit GitOps-managed public endpoints until a private L3 path exists
 
 ## Step 1. Verify Repository And Cluster Access
 
@@ -233,11 +236,77 @@ Observed result:
 - public control-plane IPs were reachable
 - private control-plane IPs were not
 
+Additional lesson:
+
+- this same reachability pattern later caused broken `Cilium` host and endpoint health between `sxmgpu` and the rest of the cluster, even though `kubeadm join` had already succeeded
+
 ## Step 8. Rewrite Kubeadm Discovery To A SAN-Compatible Hostname
 
 Why:
 
 - API certificates already covered `cp-1`, `cp-2`, `cp-3`
+
+## Step 8a. Verify Cross-Node Cilium Health Before Declaring The Node Usable
+
+Why:
+
+- a node can be `Ready` and still be unusable for cross-node pod traffic
+- `LiteLLM`, `Open WebUI`, and `vmagent` all depend on successful east-west traffic to the GPU worker
+
+Commands:
+
+```bash
+sshpass -p '<cp-1-root-password>' ssh -o StrictHostKeyChecking=no root@<cp-1-public-ip> \
+  'kubectl -n kube-system exec ds/cilium -- cilium-dbg node list'
+
+sshpass -p '<cp-1-root-password>' ssh -o StrictHostKeyChecking=no root@<cp-1-public-ip> \
+  'kubectl -n kube-system exec cilium-<gpu-cilium-pod> -- cilium status --verbose'
+```
+
+Failure signature from this incident:
+
+```text
+Cluster health: 1/5 reachable
+Host connectivity to 192.168.0.x: context deadline exceeded
+Endpoint connectivity to 10.233.x.x: context deadline exceeded
+```
+
+Meaning:
+
+- `sxmgpu` could reach public node IPs
+- `sxmgpu` could not reach the private `InternalIP` addresses used by Kubernetes and `Cilium`
+- cross-node pod traffic from `infra-1` to GPU workloads and GPU telemetry was unreliable or broken
+
+Resolution used in the live cluster:
+
+- keep the cluster joined as-is
+- route predictor access through GitOps-managed public `NodePort` services on `sxmgpu`
+- route `dcgm-exporter` scraping through a GitOps-managed public `VMStaticScrape`
+- document the lack of private L3 reachability as an environment limitation instead of treating the cluster as fully healthy
+
+Preventive rule for future clusters:
+
+- if you want normal in-cluster east-west traffic to work without these fallbacks, ensure every node can route to every other node's Kubernetes `InternalIP` before onboarding the replacement GPU worker
+
+## Step 8b. Prevent Empty Responses From Reasoning-Capable Models
+
+Why:
+
+- both `gpt-oss-20b` and `qwen35-9b` can return reasoning or thinking output instead of a normal short assistant answer
+- this breaks the expected UX in `Open WebUI`
+
+Validated fixes used in the live cluster:
+
+- `gpt-oss-20b` through `LiteLLM`:
+  - `include_reasoning: false`
+  - `reasoning_effort: low`
+  - `allowed_openai_params: [reasoning_effort]`
+- `qwen35-9b` through `LiteLLM`:
+  - `chat_template_kwargs.enable_thinking: false`
+
+Repository source of truth:
+
+- [`gitops/apps/litellm/configmap.yaml`](../../gitops/apps/litellm/configmap.yaml)
 - using a public IP directly would have created a TLS SAN mismatch
 
 Commands run from `cp-1`:
