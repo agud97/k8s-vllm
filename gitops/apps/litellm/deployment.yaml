@@ -10,6 +10,8 @@ spec:
       app.kubernetes.io/name: litellm
   template:
     metadata:
+      annotations:
+        litellm-config-revision: "prometheus-v1"
       labels:
         app.kubernetes.io/name: litellm
     spec:
