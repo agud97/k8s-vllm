@@ -42,6 +42,7 @@ spec:
         vmsingle:
           enabled: true
           spec:
+            extraArgs: {}
             retentionPeriod: 7d
             storage:
               storageClassName: openebs-hostpath
