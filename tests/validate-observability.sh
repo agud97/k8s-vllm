@@ -14,6 +14,9 @@ check_static() {
   grep -q 'targetRevision: 0.72.5' gitops/root/app-platform-victoriametrics.yaml || { printf 'victoriametrics chart version mismatch\n' >&2; exit 1; }
   grep -q 'storage: 100Gi' gitops/root/app-platform-victoriametrics.yaml || { printf 'victoriametrics pvc size mismatch\n' >&2; exit 1; }
   grep -q 'retentionPeriod: 7d' gitops/root/app-platform-victoriametrics.yaml || { printf 'victoriametrics retention mismatch\n' >&2; exit 1; }
+  grep -q 'victoria-metrics-operator:' gitops/root/app-platform-victoriametrics.yaml || { printf 'victoriametrics operator placement missing\n' >&2; exit 1; }
+  grep -q 'kube-state-metrics:' gitops/root/app-platform-victoriametrics.yaml || { printf 'kube-state-metrics placement missing\n' >&2; exit 1; }
+  grep -q 'releaseName: vmstack' gitops/root/app-platform-victoriametrics.yaml || { printf 'victoriametrics release name not shortened\n' >&2; exit 1; }
   grep -q 'kind: VMServiceScrape' gitops/platform/victoriametrics/vmservicescrape-argocd.yaml || { printf 'argocd scrape missing\n' >&2; exit 1; }
   grep -q 'kind: VMServiceScrape' gitops/platform/victoriametrics/vmservicescrape-kserve-controller.yaml || { printf 'kserve scrape missing\n' >&2; exit 1; }
   grep -q 'chart: dcgm-exporter' gitops/root/app-infra-dcgm-exporter.yaml || { printf 'dcgm exporter chart missing\n' >&2; exit 1; }
