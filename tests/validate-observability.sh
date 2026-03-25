@@ -16,6 +16,8 @@ check_static() {
   grep -q 'retentionPeriod: 7d' gitops/root/app-platform-victoriametrics.yaml || { printf 'victoriametrics retention mismatch\n' >&2; exit 1; }
   grep -q 'victoria-metrics-operator:' gitops/root/app-platform-victoriametrics.yaml || { printf 'victoriametrics operator placement missing\n' >&2; exit 1; }
   grep -q 'kube-state-metrics:' gitops/root/app-platform-victoriametrics.yaml || { printf 'kube-state-metrics placement missing\n' >&2; exit 1; }
+  grep -q 'alertmanager:' gitops/root/app-platform-victoriametrics.yaml || { printf 'victoriametrics alertmanager block missing\n' >&2; exit 1; }
+  grep -q 'enabled: false' gitops/root/app-platform-victoriametrics.yaml || { printf 'victoriametrics disabled optional components marker missing\n' >&2; exit 1; }
   grep -q 'releaseName: vmstack' gitops/root/app-platform-victoriametrics.yaml || { printf 'victoriametrics release name not shortened\n' >&2; exit 1; }
   grep -q 'kind: VMServiceScrape' gitops/platform/victoriametrics/vmservicescrape-argocd.yaml || { printf 'argocd scrape missing\n' >&2; exit 1; }
   grep -q 'kind: VMServiceScrape' gitops/platform/victoriametrics/vmservicescrape-kserve-controller.yaml || { printf 'kserve scrape missing\n' >&2; exit 1; }

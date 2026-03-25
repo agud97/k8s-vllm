@@ -19,6 +19,10 @@ spec:
           enabled: true
           annotations:
             argocd.argoproj.io/sync-options: ServerSideApply=true
+        alertmanager:
+          enabled: false
+        vmalert:
+          enabled: false
         victoria-metrics-operator:
           nodeSelector:
             node-role.kubernetes.io/infra: ""
