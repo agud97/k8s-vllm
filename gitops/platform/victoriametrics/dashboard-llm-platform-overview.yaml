@@ -1,0 +1,423 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-llm-platform-overview
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  llm-platform-overview.json: |
+    {
+      "annotations": {
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": {
+              "type": "datasource",
+              "uid": "grafana"
+            },
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "target": {
+              "limit": 100,
+              "matchAny": false,
+              "tags": [],
+              "type": "dashboard"
+            },
+            "type": "dashboard"
+          }
+        ]
+      },
+      "editable": true,
+      "panels": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "red",
+                    "value": 0
+                  },
+                  {
+                    "color": "green",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 6,
+            "x": 0,
+            "y": 0
+          },
+          "id": 1,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "value"
+          },
+          "targets": [
+            {
+              "expr": "count(vmservicescrape_status{scrape_object=\"kserve-controller-metrics\",status=\"up\"})",
+              "legendFormat": "kserve scrape",
+              "refId": "A"
+            }
+          ],
+          "title": "KServe Scrape Health",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "red",
+                    "value": 0
+                  },
+                  {
+                    "color": "green",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 6,
+            "x": 6,
+            "y": 0
+          },
+          "id": 2,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "value"
+          },
+          "targets": [
+            {
+              "expr": "count(vmservicescrape_status{scrape_object=\"llmisvc-controller-metrics\",status=\"up\"})",
+              "legendFormat": "llmisvc scrape",
+              "refId": "A"
+            }
+          ],
+          "title": "LLMIsvc Scrape Health",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 6,
+            "x": 12,
+            "y": 0
+          },
+          "id": 3,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "targets": [
+            {
+              "expr": "sum(rate(litellm_proxy_total_requests_metric_total[5m]))",
+              "legendFormat": "proxy rps",
+              "refId": "A"
+            }
+          ],
+          "title": "LiteLLM Request Rate",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 6,
+            "x": 18,
+            "y": 0
+          },
+          "id": 4,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "targets": [
+            {
+              "expr": "max(DCGM_FI_DEV_GPU_UTIL)",
+              "legendFormat": "peak util",
+              "refId": "A"
+            }
+          ],
+          "title": "Peak GPU Utilization",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "unit": "reqps"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 5
+          },
+          "id": 5,
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "expr": "sum by (requested_model) (rate(litellm_proxy_total_requests_metric_total[5m]))",
+              "legendFormat": "{{requested_model}}",
+              "refId": "A"
+            }
+          ],
+          "title": "LiteLLM Requests By Model",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 5
+          },
+          "id": 6,
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.95, sum(rate(litellm_request_total_latency_metric_bucket[5m])) by (le))",
+              "legendFormat": "p95 total latency",
+              "refId": "A"
+            },
+            {
+              "expr": "histogram_quantile(0.95, sum(rate(litellm_llm_api_latency_metric_bucket[5m])) by (le))",
+              "legendFormat": "p95 upstream latency",
+              "refId": "B"
+            }
+          ],
+          "title": "Request And Upstream Latency",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 13
+          },
+          "id": 7,
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "expr": "DCGM_FI_DEV_GPU_UTIL",
+              "legendFormat": "{{instance}} gpu={{gpu}}",
+              "refId": "A"
+            }
+          ],
+          "title": "GPU Utilization",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 13
+          },
+          "id": 8,
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "expr": "DCGM_FI_DEV_FB_USED",
+              "legendFormat": "{{instance}} gpu={{gpu}}",
+              "refId": "A"
+            }
+          ],
+          "title": "GPU Memory Used",
+          "type": "timeseries"
+        }
+      ],
+      "schemaVersion": 41,
+      "tags": [
+        "llm",
+        "platform",
+        "litellm",
+        "gpu",
+        "kserve"
+      ],
+      "templating": {
+        "list": [
+          {
+            "current": {
+              "text": "Prometheus",
+              "value": "prometheus"
+            },
+            "name": "datasource",
+            "options": [],
+            "query": "prometheus",
+            "refresh": 1,
+            "type": "datasource"
+          }
+        ]
+      },
+      "time": {
+        "from": "now-6h",
+        "to": "now"
+      },
+      "title": "LLM Platform Overview",
+      "uid": "llm-platform-overview-lab",
+      "version": 1
+    }

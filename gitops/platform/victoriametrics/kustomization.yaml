@@ -4,6 +4,7 @@ namespace: monitoring
 resources:
   - dashboard-note-configmap.yaml
   - dashboard-gpu-overview.yaml
+  - dashboard-llm-platform-overview.yaml
   - dashboard-litellm-overview.yaml
   - vmservicescrape-argocd.yaml
   - vmservicescrape-dcgm-exporter.yaml

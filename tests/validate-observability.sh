@@ -24,6 +24,7 @@ check_static() {
   grep -q 'kind: VMServiceScrape' gitops/platform/victoriametrics/vmservicescrape-litellm.yaml || { printf 'litellm scrape missing\n' >&2; exit 1; }
   grep -q 'grafana_dashboard: "1"' gitops/platform/victoriametrics/dashboard-gpu-overview.yaml || { printf 'gpu dashboard label missing\n' >&2; exit 1; }
   grep -q 'grafana_dashboard: "1"' gitops/platform/victoriametrics/dashboard-litellm-overview.yaml || { printf 'litellm dashboard label missing\n' >&2; exit 1; }
+  grep -q 'grafana_dashboard: "1"' gitops/platform/victoriametrics/dashboard-llm-platform-overview.yaml || { printf 'llm platform dashboard label missing\n' >&2; exit 1; }
   grep -q 'prometheus' gitops/apps/litellm/configmap.yaml || { printf 'litellm prometheus callback missing\n' >&2; exit 1; }
   grep -q 'chart: dcgm-exporter' gitops/root/app-infra-dcgm-exporter.yaml || { printf 'dcgm exporter chart missing\n' >&2; exit 1; }
   printf 'observability static validation passed\n'
