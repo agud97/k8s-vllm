@@ -171,12 +171,12 @@ plan:
           validation: "LiteLLM is actually deployed to the live cluster, requests without valid API keys fail, valid requests route through LiteLLM, and the configured upstream contract matches the specification."
         - id: task-4.4
           name: "Implement VictoriaMetrics stack"
-          description: "Deploy VictoriaMetrics Kubernetes stack with 7-day retention, 100Gi persistent storage, and the required metric targets and dashboards."
+          description: "Deploy VictoriaMetrics Kubernetes stack with 7-day retention, 100Gi persistent storage, the required metric targets and dashboards, and explicit GPU telemetry collection for active GPU nodes."
           artifact: "gitops/platform/victoriametrics manifests"
           depends_on:
             - task-3.3
             - task-3.4
-          validation: "VictoriaMetrics is actually deployed to the live cluster, is healthy, PVCs request 100Gi, retention is set to 7 days, and required target coverage is present."
+          validation: "VictoriaMetrics is actually deployed to the live cluster, is healthy, PVCs request 100Gi, retention is set to 7 days, required target coverage is present, and GPU metrics are collected through the approved exporter path."
         - id: task-4.5
           name: "Implement integration validation"
           description: "Add cluster-dependent validation for serving readiness, LiteLLM auth, S3-backed model access, NodePort reachability, and observability coverage."

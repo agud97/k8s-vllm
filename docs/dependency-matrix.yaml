@@ -43,6 +43,9 @@ spec:
     nvidia_device_plugin:
       version: "v0.19.0"
       source: "https://github.com/NVIDIA/k8s-device-plugin/releases/tag/v0.19.0"
+    dcgm_exporter:
+      version: "4.8.1"
+      source: "https://nvidia.github.io/dcgm-exporter/helm-charts/"
   conditional_dependencies:
     knative_serving:
       enabled: true

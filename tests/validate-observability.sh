@@ -10,17 +10,23 @@ need_cmd() {
 }
 
 check_static() {
-  grep -q 'storage: 100Gi' gitops/platform/victoriametrics/victoria-metrics-pvc.yaml || { printf 'victoriametrics pvc size mismatch\n' >&2; exit 1; }
-  grep -q 'retentionPeriod: "7d"' gitops/platform/victoriametrics/victoria-metrics-config.yaml || { printf 'victoriametrics retention mismatch\n' >&2; exit 1; }
-  grep -q 'litellm' gitops/platform/victoriametrics/victoria-metrics-config.yaml || { printf 'litellm scrape target missing\n' >&2; exit 1; }
-  grep -q 'kserve' gitops/platform/victoriametrics/victoria-metrics-config.yaml || { printf 'kserve scrape target missing\n' >&2; exit 1; }
+  grep -q 'chart: victoria-metrics-k8s-stack' gitops/root/app-platform-victoriametrics.yaml || { printf 'victoriametrics chart missing\n' >&2; exit 1; }
+  grep -q 'targetRevision: 0.72.5' gitops/root/app-platform-victoriametrics.yaml || { printf 'victoriametrics chart version mismatch\n' >&2; exit 1; }
+  grep -q 'storage: 100Gi' gitops/root/app-platform-victoriametrics.yaml || { printf 'victoriametrics pvc size mismatch\n' >&2; exit 1; }
+  grep -q 'retentionPeriod: 7d' gitops/root/app-platform-victoriametrics.yaml || { printf 'victoriametrics retention mismatch\n' >&2; exit 1; }
+  grep -q 'kind: VMServiceScrape' gitops/platform/victoriametrics/vmservicescrape-argocd.yaml || { printf 'argocd scrape missing\n' >&2; exit 1; }
+  grep -q 'kind: VMServiceScrape' gitops/platform/victoriametrics/vmservicescrape-kserve-controller.yaml || { printf 'kserve scrape missing\n' >&2; exit 1; }
+  grep -q 'chart: dcgm-exporter' gitops/root/app-infra-dcgm-exporter.yaml || { printf 'dcgm exporter chart missing\n' >&2; exit 1; }
   printf 'observability static validation passed\n'
 }
 
 check_runtime() {
   need_cmd kubectl
-  kubectl -n monitoring get pvc victoriametrics-data >/tmp/vm_pvc.txt
-  kubectl -n monitoring get configmap victoriametrics-settings >/tmp/vm_config.txt
+  kubectl -n argocd get application platform-victoriametrics >/tmp/vm_app.txt
+  kubectl -n argocd get application infra-dcgm-exporter >/tmp/dcgm_app.txt
+  kubectl -n monitoring get pods >/tmp/vm_pods.txt
+  kubectl -n monitoring get vmsingle,vmagent,vmservicescrape >/tmp/vm_objects.txt
+  kubectl -n monitoring get ds dcgm-exporter >/tmp/dcgm_ds.txt
   printf 'observability runtime validation passed\n'
 }
 

@@ -136,6 +136,8 @@
 
 52. WHEN the observability stack is healthy, THEN metrics targets are inspected, SHALL collect metrics for kube-state-metrics, node-exporter, Kubernetes control plane, cAdvisor or kubelet, Cilium, Istio, ArgoCD, LiteLLM, and KServe or vLLM.
 
+52a. WHEN GPU observability is reviewed after deployment, THEN the live cluster resources are inspected, SHALL show a GPU metrics exporter running on active GPU worker nodes and exposing scrapeable NVIDIA telemetry to the observability stack.
+
 53. WHEN the operator opens the observability dashboards, THEN dashboard coverage is reviewed, SHALL provide dashboard coverage for these monitored areas: cluster nodes, Kubernetes workloads, Kubernetes control plane, Cilium, Istio, ArgoCD, LiteLLM, and KServe or vLLM.
 
 54. WHEN the observability deliverable is inspected, THEN the deployed scope is reviewed, SHALL include metrics and dashboards and SHALL not require alerting, tracing, or centralized logging for acceptance.

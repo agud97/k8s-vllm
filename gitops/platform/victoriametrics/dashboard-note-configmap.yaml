@@ -4,4 +4,4 @@ metadata:
   name: victoriametrics-dashboard-coverage
   namespace: monitoring
 data:
-  areas: "cluster nodes,kubernetes workloads,kubernetes control plane,cilium,istio,argocd,litellm,kserve/vllm"
+  areas: "cluster nodes,kubernetes workloads,kubernetes control plane,cilium,istio,argocd,kserve/vllm,gpu"

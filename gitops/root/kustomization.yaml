@@ -7,6 +7,7 @@ resources:
   - app-infra-openebs.yaml
   - app-infra-istio.yaml
   - app-infra-nvidia-device-plugin.yaml
+  - app-infra-dcgm-exporter.yaml
   - app-platform-knative-serving.yaml
   - app-platform-kserve.yaml
   - app-platform-victoriametrics.yaml

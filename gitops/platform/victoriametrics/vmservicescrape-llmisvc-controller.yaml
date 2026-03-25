@@ -1,0 +1,20 @@
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  name: llmisvc-controller-metrics
+  namespace: monitoring
+spec:
+  namespaceSelector:
+    matchNames:
+      - kserve
+  selector:
+    matchLabels:
+      control-plane: llmisvc-controller-manager
+  endpoints:
+    - port: https
+      scheme: https
+      interval: 30s
+      scrapeTimeout: 10s
+      tlsConfig:
+        insecureSkipVerify: true
+  jobLabel: control-plane

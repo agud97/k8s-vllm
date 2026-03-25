@@ -102,6 +102,7 @@ Relevant specs:
 - The model sources MUST be pinned to `openai/gpt-oss-20b` and `Qwen/Qwen3.5-9B`.
 - Public inference access MUST go through LiteLLM using LiteLLM native API key authentication.
 - Observability MUST use VictoriaMetrics Kubernetes stack with 7-day retention and 100Gi persistent storage.
+- GPU observability MUST use an in-cluster exporter compatible with NVIDIA host drivers and the VictoriaMetrics scrape model; NVIDIA DCGM Exporter is the approved implementation path for the lab environment.
 - Persistent storage for in-cluster stateful workloads MUST use OpenEBS LocalPV where persistence is required in this lab environment.
 - Storage ownership MUST follow this lab matrix:
   - model artifacts in S3

@@ -105,6 +105,7 @@ Important constraint: the source text mixes stakeholder requirements with archit
    - ArgoCD
    - LiteLLM
    - KServe and vLLM
+   - GPU metrics from active GPU worker nodes
 
 35. VictoriaMetrics persistent storage size must be 100Gi on the infra node.
 
@@ -177,6 +178,8 @@ Important constraint: the source text mixes stakeholder requirements with archit
    - Cilium recovery
    - NVIDIA runtime recovery
    - safe removal of dead node objects from Kubernetes
+
+48. GPU observability for the lab environment must expose NVIDIA telemetry through a Kubernetes-managed exporter so that active GPU workers contribute utilization, memory, temperature, power, and health metrics into the VictoriaMetrics stack.
 
 ## Implementation Risks
 
