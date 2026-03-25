@@ -11,7 +11,7 @@ spec:
   template:
     metadata:
       annotations:
-        litellm-config-revision: "reasoning-off-v1"
+        litellm-config-revision: "reasoning-off-v2"
       labels:
         app.kubernetes.io/name: litellm
     spec:
