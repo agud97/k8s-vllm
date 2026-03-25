@@ -7,6 +7,7 @@ spec:
     - name: huggingface
       version: "1"
       autoSelect: true
+  hostIPC: true
   containers:
     - name: kserve-container
       image: vllm/vllm-openai:v0.17.1
@@ -21,6 +22,8 @@ spec:
           value: "1"
         - name: PYTORCH_CUDA_ALLOC_CONF
           value: expandable_segments:True
+        - name: SAFETENSORS_FAST_GPU
+          value: "1"
       resources:
         requests:
           cpu: "4"
@@ -45,3 +48,4 @@ spec:
     - name: devshm
       emptyDir:
         medium: Memory
+        sizeLimit: 32Gi

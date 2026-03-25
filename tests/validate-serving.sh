@@ -17,24 +17,33 @@ check_s3_config() {
 }
 
 check_litellm_manifests() {
-  grep -q '/v1/chat/completions' gitops/apps/litellm/configmap.yaml || { printf 'LiteLLM upstream path missing /v1/chat/completions contract\n' >&2; exit 1; }
-  grep -q 'gpt-oss-20b' gitops/apps/litellm/configmap.yaml || { printf 'gpt-oss-20b alias missing\n' >&2; exit 1; }
-  grep -q 'qwen35-9b' gitops/apps/litellm/configmap.yaml || { printf 'qwen35-9b alias missing\n' >&2; exit 1; }
+  grep -q ':32090/v1' gitops/apps/litellm/configmap.yaml || { printf 'qwen-122b upstream api_base missing\n' >&2; exit 1; }
+  grep -q ':32091/v1' gitops/apps/litellm/configmap.yaml || { printf 'minimax-m25 upstream api_base missing\n' >&2; exit 1; }
+  grep -q ':32092/v1' gitops/apps/litellm/configmap.yaml || { printf 'qwen-coder upstream api_base missing\n' >&2; exit 1; }
+  grep -q 'qwen-122b' gitops/apps/litellm/configmap.yaml || { printf 'qwen-122b alias missing\n' >&2; exit 1; }
+  grep -q 'minimax-m25' gitops/apps/litellm/configmap.yaml || { printf 'minimax-m25 alias missing\n' >&2; exit 1; }
+  grep -q 'qwen-coder' gitops/apps/litellm/configmap.yaml || { printf 'qwen-coder alias missing\n' >&2; exit 1; }
+  grep -q 'model_name: default' gitops/apps/litellm/configmap.yaml || { printf 'default alias missing\n' >&2; exit 1; }
   printf 'litellm manifest validation passed\n'
 }
 
 check_runtime_manifests() {
-  grep -q 'openai/gpt-oss-20b' docs/runbooks/model-artifacts.md || { printf 'gpt-oss-20b source missing\n' >&2; exit 1; }
-  grep -q 'Qwen/Qwen3.5-9B' docs/runbooks/model-artifacts.md || { printf 'Qwen3.5-9B source missing\n' >&2; exit 1; }
-  grep -q 'runtime: vllm-openai-runtime' gitops/apps/llm-serving/inference-service.yaml || { printf 'Qwen InferenceService runtime missing\n' >&2; exit 1; }
-  grep -q 'runtime: vllm-openai-runtime' gitops/apps/llm-serving/inference-service-gpt-oss-20b.yaml || { printf 'GPT-OSS InferenceService runtime missing\n' >&2; exit 1; }
+  grep -q 'Qwen/Qwen3.5-122B-A10B-FP8' docs/runbooks/model-artifacts.md || { printf 'Qwen3.5-122B-A10B-FP8 source missing\n' >&2; exit 1; }
+  grep -q 'MiniMaxAI/MiniMax-M2.5' docs/runbooks/model-artifacts.md || { printf 'MiniMax-M2.5 source missing\n' >&2; exit 1; }
+  grep -q 'Qwen/Qwen3-Coder-Next' docs/runbooks/model-artifacts.md || { printf 'Qwen3-Coder-Next source missing\n' >&2; exit 1; }
+  grep -q 'hostIPC: true' gitops/platform/kserve/cluster-serving-runtime.yaml || { printf 'shared runtime hostIPC missing\n' >&2; exit 1; }
+  grep -q 'sizeLimit: 32Gi' gitops/platform/kserve/cluster-serving-runtime.yaml || { printf 'shared runtime /dev/shm sizing missing\n' >&2; exit 1; }
+  grep -q 'runtime: vllm-openai-runtime' gitops/apps/llm-serving/inference-service-qwen35-122b.yaml || { printf 'Qwen 122B InferenceService runtime missing\n' >&2; exit 1; }
+  grep -q 'runtime: vllm-openai-runtime' gitops/apps/llm-serving/inference-service-minimax-m25.yaml || { printf 'MiniMax InferenceService runtime missing\n' >&2; exit 1; }
+  grep -q 'runtime: vllm-openai-runtime' gitops/apps/llm-serving/inference-service-qwen3-coder.yaml || { printf 'Qwen coder InferenceService runtime missing\n' >&2; exit 1; }
   printf 'runtime manifest validation passed\n'
 }
 
 check_cluster_runtime() {
   need_cmd kubectl
-  kubectl -n llm get inferenceservice gpt-oss-20b >/tmp/inferenceservice-gpt-oss-20b.txt
-  kubectl -n llm get inferenceservice qwen35-9b >/tmp/inferenceservice-qwen35-9b.txt
+  kubectl -n llm get inferenceservice qwen35-122b >/tmp/inferenceservice-qwen35-122b.txt
+  kubectl -n llm get inferenceservice minimax-m25 >/tmp/inferenceservice-minimax-m25.txt
+  kubectl -n llm get inferenceservice qwen3-coder >/tmp/inferenceservice-qwen3-coder.txt
   kubectl -n llm get deploy litellm >/tmp/litellm_deploy.txt
   kubectl -n llm get svc litellm >/tmp/litellm_svc.txt
   printf 'cluster serving validation passed\n'

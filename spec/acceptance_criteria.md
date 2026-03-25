@@ -62,15 +62,15 @@
 
 22. WHEN the public inference endpoint is called with a valid LiteLLM API key, THEN a supported inference request is sent, SHALL be accepted and routed through LiteLLM to the underlying model-serving path.
 
-22a. WHEN the phase-1 reasoning-capable models are called through LiteLLM with normal short-response prompts, THEN the returned assistant message SHALL contain normal `content` text rather than only reasoning or thinking metadata.
+22a. WHEN the active LiteLLM aliases are called through the documented client path, THEN the returned assistant message SHALL follow the intended UX for that model and SHALL not fail with infrastructure or routing errors caused by missing aliases or broken upstream endpoint selection.
 
 23. WHEN the deployed lab environment is inspected for transport settings, THEN the public inference endpoint configuration is reviewed, SHALL permit initial HTTP access without requiring TLS or a custom DNS name.
 
-24. WHEN the phase-1 inference integration is inspected, THEN the LiteLLM upstream configuration is reviewed, SHALL reference exactly two internal OpenAI-compatible upstream endpoints provided by the serving stack.
+24. WHEN the active inference integration is inspected, THEN the LiteLLM upstream configuration is reviewed, SHALL reference exactly three OpenAI-compatible upstream endpoints provided by the serving stack.
 
-24a. WHEN the phase-1 inference integration is inspected, THEN the LiteLLM upstream configuration is reviewed, SHALL target an internal HTTP endpoint exposing `/v1/chat/completions`.
+24a. WHEN the active inference integration is inspected, THEN the LiteLLM upstream configuration is reviewed, SHALL target an HTTP endpoint exposing `/v1/chat/completions`, using the repository-managed public-fallback topology whenever private east-west reachability to `sxmgpu` is unavailable.
 
-24b. WHEN the LiteLLM model configuration is inspected for phase 1, THEN the configured models are reviewed, SHALL define pinned model aliases for `gpt-oss-20b` and `qwen35-9b`, and the default smoke test SHALL use `qwen35-9b`.
+24b. WHEN the LiteLLM model configuration is inspected, THEN the configured models are reviewed, SHALL define pinned model aliases for `qwen-122b`, `minimax-m25`, and `qwen-coder`, and the default smoke test SHALL use `default`.
 
 25. WHEN the selected `NodePort` on `infra-1` is blocked by firewall or provider networking, THEN external inference validation is executed, SHALL fail with an observable endpoint reachability error.
 
@@ -80,11 +80,11 @@
 
 26a. WHEN final acceptance is evaluated, THEN the live cluster is inspected, SHALL show that KServe, LiteLLM, and VictoriaMetrics are actually installed and reconciled in the cluster rather than only present in the repository.
 
-27. WHEN the deployment configuration is inspected, THEN the model source definition is reviewed, SHALL reference `openai/gpt-oss-20b` and `Qwen/Qwen3.5-9B` as the pinned model sources.
+27. WHEN the deployment configuration is inspected, THEN the model source definition is reviewed, SHALL reference `Qwen/Qwen3.5-122B-A10B-FP8`, `MiniMaxAI/MiniMax-M2.5`, and `Qwen/Qwen3-Coder-Next` as the pinned model sources.
 
 28. WHEN the selected KServe, Knative, or Istio implementation requires additional dependencies such as `cert-manager`, THEN the deployed platform is inspected, SHALL match the conditionally enabled dependencies declared in the repository dependency matrix.
 
-29. WHEN the initial lab-serving configuration is applied, THEN the runtime topology is inspected, SHALL use two single-replica, non-distributed `KServe InferenceService` deployments pinned one-to-one to the two GPU nodes without requiring true multi-node inference across both GPU nodes.
+29. WHEN the current lab-serving configuration is applied, THEN the runtime topology is inspected, SHALL use three single-replica, non-distributed `KServe InferenceService` deployments co-located on the active `8x H200` GPU node with the repository-declared `2+4+2` GPU split, without requiring true multi-node inference across multiple GPU nodes.
 
 30. WHEN the target model deployments reach a healthy state, THEN Kubernetes workload resources are inspected, SHALL show the serving workloads scheduled only onto GPU-capable nodes.
 
@@ -162,7 +162,7 @@
 
 57a. WHEN the final documentation is reviewed for recovery coverage, THEN it SHALL include a GPU node replacement runbook covering worker join, Cilium recovery, NVIDIA runtime recovery, and stale-node removal.
 
-57b. WHEN the final documentation is reviewed for repeatability, THEN it SHALL explain the difference between public-IP worker join and private-IP east-west cluster reachability, and SHALL document the model-specific LiteLLM defaults required to avoid reasoning-only responses in the phase-1 UI.
+57b. WHEN the final documentation is reviewed for repeatability, THEN it SHALL explain the difference between public-IP worker join and private-IP east-west cluster reachability, and SHALL document the active public-fallback serving topology plus the model alias contract exported through LiteLLM.
 
 58. WHEN the final documentation is reviewed, THEN it SHALL include a sample LiteLLM smoke-test request and a sample successful response.
 

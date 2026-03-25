@@ -103,9 +103,11 @@ kubectl --kubeconfig local/runtime/admin.conf get applications -n argocd
 
 - GPU workers must have L3 reachability to the `InternalIP` addresses of every cluster node. Public `access_ip` values are enough for `kubeadm join`, but they are not enough to guarantee healthy cross-node pod networking with `Cilium`.
 - If a replacement GPU node cannot reach control-plane or infra-node private `InternalIP` addresses, treat that as a bootstrap blocker for normal in-cluster east-west traffic. Either place the node onto the same private network or explicitly route serving and observability traffic through GitOps-managed public endpoints.
-- `LiteLLM` must carry model-specific defaults for reasoning-capable models:
-  - `gpt-oss-20b`: `include_reasoning: false`
-  - `qwen35-9b`: `chat_template_kwargs.enable_thinking: false`
+- The current serving target is three S3-backed models on `sxmgpu`:
+  - `Qwen/Qwen3.5-122B-A10B-FP8` exposed as `qwen-122b` and `default`
+  - `MiniMaxAI/MiniMax-M2.5` exposed as `minimax-m25`
+  - `Qwen/Qwen3-Coder-Next` exposed as `qwen-coder`
+- Multi-GPU `vLLM` runtimes on the `8x H200` worker require `hostIPC: true`, a large `/dev/shm`, and successful `nvidia-fabricmanager` initialization before predictor pods can initialize CUDA reliably.
 - `dcgm-exporter` on public-only GPU workers must be scraped through the GitOps-managed public endpoint if the observability stack cannot reliably reach the GPU pod CIDR.
 
 ## Validation Commands
@@ -147,7 +149,8 @@ make smoke-test
 
 The scripted request uses:
 
-- default model alias: `qwen35-9b`
+- default model alias: `default`
+- current default route: `qwen-122b`
 - prompt: `Напиши одно короткое предложение о Kubernetes.`
 
 Example request:
@@ -157,7 +160,7 @@ curl -H "Authorization: Bearer $LITELLM_API_KEY" \
   -H "Content-Type: application/json" \
   -X POST "$LITELLM_BASE_URL/v1/chat/completions" \
   -d '{
-    "model": "qwen35-9b",
+    "model": "default",
     "messages": [{"role": "user", "content": "Напиши одно короткое предложение о Kubernetes."}],
     "max_tokens": 64
   }'
@@ -185,7 +188,8 @@ Example successful response shape:
 
 - URL: `http://<infra-1-public-ip>:32081`
 - Admin credentials are sourced from `local/llm.env` and bootstrapped via `./bootstrap/app-secrets.sh`
-- If models appear in the selector but replies look empty, inspect [`gitops/apps/litellm/configmap.yaml`](gitops/apps/litellm/configmap.yaml) first; reasoning-capable upstreams must have the repository-pinned anti-reasoning defaults applied through `LiteLLM`
+- If models do not appear in the selector, inspect [`gitops/apps/litellm/configmap.yaml`](gitops/apps/litellm/configmap.yaml) first; Open WebUI only reflects the aliases currently exported by `LiteLLM`
+- If model replies fail after a model switch, inspect the public fallback upstreams in [`gitops/apps/litellm/configmap.yaml`](gitops/apps/litellm/configmap.yaml) and the S3-backed `InferenceService` objects in [`gitops/apps/llm-serving`](gitops/apps/llm-serving)
 
 ## Grafana
 

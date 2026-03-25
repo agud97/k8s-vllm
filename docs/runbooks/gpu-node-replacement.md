@@ -44,8 +44,9 @@ These files were changed before live node onboarding:
 - [`bootstrap/playbooks/host-prep.yml`](../../bootstrap/playbooks/host-prep.yml)
 - [`bootstrap/playbooks/gpu-prep.yml`](../../bootstrap/playbooks/gpu-prep.yml)
 - [`tests/validate-cluster.sh`](../../tests/validate-cluster.sh)
-- [`gitops/apps/llm-serving/inference-service.yaml`](../../gitops/apps/llm-serving/inference-service.yaml)
-- [`gitops/apps/llm-serving/inference-service-gpt-oss-20b.yaml`](../../gitops/apps/llm-serving/inference-service-gpt-oss-20b.yaml)
+- [`gitops/apps/llm-serving/inference-service-qwen35-122b.yaml`](../../gitops/apps/llm-serving/inference-service-qwen35-122b.yaml)
+- [`gitops/apps/llm-serving/inference-service-minimax-m25.yaml`](../../gitops/apps/llm-serving/inference-service-minimax-m25.yaml)
+- [`gitops/apps/llm-serving/inference-service-qwen3-coder.yaml`](../../gitops/apps/llm-serving/inference-service-qwen3-coder.yaml)
 
 Important inventory lessons:
 
@@ -292,17 +293,14 @@ Preventive rule for future clusters:
 
 Why:
 
-- both `gpt-oss-20b` and `qwen35-9b` can return reasoning or thinking output instead of a normal short assistant answer
-- this breaks the expected UX in `Open WebUI`
+- reasoning-capable models can expose a UX mismatch in `Open WebUI` if `LiteLLM` aliases, model defaults, or public fallback upstreams are not reviewed after a serving change
+- alias mismatches can look like "empty response" or "model missing" failures even when the predictor itself is healthy
 
-Validated fixes used in the live cluster:
+Current source of truth:
 
-- `gpt-oss-20b` through `LiteLLM`:
-  - `include_reasoning: false`
-  - `reasoning_effort: low`
-  - `allowed_openai_params: [reasoning_effort]`
-- `qwen35-9b` through `LiteLLM`:
-  - `chat_template_kwargs.enable_thinking: false`
+- `LiteLLM` aliases now live in [`gitops/apps/litellm/configmap.yaml`](../../gitops/apps/litellm/configmap.yaml)
+- active aliases are `default`, `qwen-122b`, `minimax-m25`, and `qwen-coder`
+- every alias must point at the intended public fallback `NodePort` on `sxmgpu`
 
 Repository source of truth:
 
@@ -702,6 +700,8 @@ In this incident:
 
 - `gpt-oss-20b` was still selecting `kubernetes.io/hostname=gpu-1`
 - `qwen35-9b` was still selecting `kubernetes.io/hostname=gpu-2`
+
+For future replacements, the same check applies to any model lineup: verify that every live `InferenceService` now selects `sxmgpu` or the intended replacement hostname, not a retired worker name.
 
 Check:
 

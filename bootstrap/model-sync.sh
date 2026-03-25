@@ -13,8 +13,9 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 S3_ENV_FILE="${ROOT_DIR}/local/s3.env"
 WORKDIR="${ROOT_DIR}/bootstrap/cache/model-sync"
 MODEL_REPOS=(
-  "openai/gpt-oss-20b"
-  "Qwen/Qwen3.5-9B"
+  "Qwen/Qwen3.5-122B-A10B-FP8"
+  "MiniMaxAI/MiniMax-M2.5"
+  "Qwen/Qwen3-Coder-Next"
 )
 
 [[ -f "$S3_ENV_FILE" ]] || { printf 'missing required file: %s\n' "$S3_ENV_FILE" >&2; exit 1; }

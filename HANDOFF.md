@@ -95,11 +95,13 @@ make smoke-test
 
 Default smoke-test model alias:
 
-- `qwen35-9b`
+- `default`
 
 Alternative alias available through `LiteLLM`:
 
-- `gpt-oss-20b`
+- `qwen-122b`
+- `minimax-m25`
+- `qwen-coder`
 
 ## Known Operational Notes
 
@@ -120,9 +122,11 @@ Alternative alias available through `LiteLLM`:
   - `openwebui-admin`
 - `ClusterServingRuntime vllm-openai-runtime` must not hard-code `--served-model-name`; each `InferenceService` passes its own model name.
 - `Open WebUI` is configured to use internal `LiteLLM` and does not expose secrets via Git.
-- `LiteLLM` must preserve model-specific anti-reasoning defaults for clean UI responses:
-  - `gpt-oss-20b`: `include_reasoning: false`, `reasoning_effort: low`, `allowed_openai_params: [reasoning_effort]`
-  - `qwen35-9b`: `chat_template_kwargs.enable_thinking: false`
+- `LiteLLM` now exposes three S3-backed public-fallback upstreams on `sxmgpu`:
+  - `qwen-122b` via `32090`
+  - `minimax-m25` via `32091`
+  - `qwen-coder` via `32092`
+  - alias `default` maps to `qwen-122b`
 
 ## Fast Recovery Checks
 
@@ -142,6 +146,6 @@ If needed, recreate runtime secrets:
 
 ## Current Repository Baseline
 
-- dual-model serving layout is reflected in implementation, but the current live cluster uses one replacement GPU node `sxmgpu`
+- three-model serving layout is reflected in implementation, with `2+4+2` GPU allocation on the replacement GPU node `sxmgpu`
 - current `main` branch is the deployment source for `ArgoCD`
 - use [`Release.md`](Release.md) for the platform change history

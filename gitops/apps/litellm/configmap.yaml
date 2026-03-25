@@ -6,22 +6,26 @@ metadata:
 data:
   config.yaml: |
     model_list:
-      - model_name: gpt-oss-20b
+      - model_name: qwen-122b
         litellm_params:
-          model: openai/gpt-oss-20b
+          model: openai/qwen-122b
           api_base: http://89.108.125.7:32090/v1
           api_key: dummy
-          include_reasoning: false
-          reasoning_effort: low
-          allowed_openai_params:
-            - reasoning_effort
-      - model_name: qwen35-9b
+      - model_name: minimax-m25
         litellm_params:
-          model: openai/qwen35-9b
+          model: openai/minimax-m25
           api_base: http://89.108.125.7:32091/v1
           api_key: dummy
-          chat_template_kwargs:
-            enable_thinking: false
+      - model_name: qwen-coder
+        litellm_params:
+          model: openai/qwen-coder
+          api_base: http://89.108.125.7:32092/v1
+          api_key: dummy
+      - model_name: default
+        litellm_params:
+          model: openai/qwen-122b
+          api_base: http://89.108.125.7:32090/v1
+          api_key: dummy
     litellm_settings:
       callbacks:
         - prometheus

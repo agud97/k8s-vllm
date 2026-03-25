@@ -210,8 +210,9 @@ Expected result:
 Expected result:
 
 - model sync completes for:
-  - `openai/gpt-oss-20b`
-  - `Qwen/Qwen3.5-9B`
+  - `Qwen/Qwen3.5-122B-A10B-FP8`
+  - `MiniMaxAI/MiniMax-M2.5`
+  - `Qwen/Qwen3-Coder-Next`
 
 ## 11. Wait For GitOps Reconciliation
 
@@ -231,9 +232,11 @@ Expected target state:
 - `litellm` pod -> `Running`
 - `openwebui` pod -> `Running`
 - predictors scheduled only on currently active GPU nodes
-- `LiteLLM` model defaults preserve plain-text responses:
-  - `gpt-oss-20b` must keep `include_reasoning: false`
-  - `qwen35-9b` must keep `chat_template_kwargs.enable_thinking: false`
+- `LiteLLM` exports the active aliases:
+  - `default`
+  - `qwen-122b`
+  - `minimax-m25`
+  - `qwen-coder`
 
 If GPU nodes were replaced after initial bootstrap:
 
@@ -275,7 +278,7 @@ Expected result:
 
 Default smoke-test model:
 
-- `qwen35-9b`
+- `default`
 
 ## 14. Open Open WebUI
 

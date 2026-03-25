@@ -11,7 +11,7 @@ spec:
   template:
     metadata:
       annotations:
-        litellm-config-revision: "reasoning-off-v2"
+        litellm-config-revision: "three-model-s3-public-fallback-v1"
       labels:
         app.kubernetes.io/name: litellm
     spec:

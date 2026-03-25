@@ -22,12 +22,10 @@ flowchart TB
       vm[VictoriaMetrics]
     end
 
-    subgraph gpu1[gpu-1]
-      gptoss[gpt-oss-20b\nKServe InferenceService\nvLLM runtime]
-    end
-
-    subgraph gpu2[gpu-2]
-      qwen[qwen35-9b\nKServe InferenceService\nvLLM runtime]
+    subgraph sxm[sxmgpu\n8x H200]
+      qwen122[qwen35-122b\nTP=2\nvLLM runtime]
+      minimax[minimax-m25\nTP=4\nvLLM runtime]
+      coder[qwen3-coder\nTP=2\nvLLM runtime]
     end
 
     knative[Knative Serving]
@@ -46,8 +44,9 @@ flowchart TB
   internet -->|NodePort 32080| istio
   istio --> litellm
   openwebui -->|OpenAI-compatible API| litellm
-  litellm -->|/v1/chat/completions| gptoss
-  litellm -->|/v1/chat/completions| qwen
+  litellm -->|public fallback /v1| qwen122
+  litellm -->|public fallback /v1| minimax
+  litellm -->|public fallback /v1| coder
 
   argocd --> github
   argocd --> istio
@@ -60,15 +59,15 @@ flowchart TB
   argocd --> sealed
 
   hf -->|bootstrap/model-sync.sh| s3
-  s3 -->|model pull| gptoss
-  s3 -->|model pull| qwen
+  s3 -->|model pull| qwen122
+  s3 -->|model pull| minimax
+  s3 -->|model pull| coder
 
   cilium --- cp1
   cilium --- cp2
   cilium --- cp3
   cilium --- infra
-  cilium --- gpu1
-  cilium --- gpu2
+  cilium --- sxm
   openebs --- vm
 ```
 
@@ -83,12 +82,11 @@ flowchart TB
 
 - `cp-1`, `cp-2`, `cp-3`: Kubernetes control plane and `etcd`
 - `infra-1`: ingress, GitOps, API gateway, UI, metrics
-- `gpu-1`: `gpt-oss-20b`
-- `gpu-2`: `qwen35-9b`
+- `sxmgpu`: `qwen35-122b`, `minimax-m25`, `qwen3-coder`
 
 ## Serving Layout
 
 - `LiteLLM` is the only public inference entrypoint.
 - `Open WebUI` uses internal `LiteLLM`, not direct model backends.
-- Each model is exposed internally through one OpenAI-compatible vLLM endpoint.
-- Phase-1 serving is non-distributed: one model per GPU node.
+- Each model is exposed through one OpenAI-compatible vLLM endpoint and one GitOps-managed public fallback `NodePort` on `sxmgpu`.
+- Current serving is non-distributed but multi-GPU within a single node: `TP=2` for `qwen35-122b`, `TP=4` for `minimax-m25`, and `TP=2` for `qwen3-coder`.

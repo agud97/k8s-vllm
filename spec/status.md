@@ -36,9 +36,9 @@
 ### Phase 4: Serving And Observability Integration
 | Task | Status | Notes |
 |------|--------|-------|
-| task-4.1 | → IN_PROGRESS | GitOps serving manifests now point to S3-backed model URIs; `gpt-oss` artifacts are complete and `qwen` required a second rollout after its large shard files appeared in S3 |
-| task-4.2 | → IN_PROGRESS | KServe/vLLM serving recovered from NVSwitch CUDA initialization failures on `sxmgpu`; `gpt-oss-20b` is Ready and `qwen35-9b` is reloading from the now-complete S3 prefix |
-| task-4.3 | ✓ COMPLETE | LiteLLM is live on the public NodePort path with API-key auth; current live topology uses GitOps-managed public predictor upstreams plus anti-reasoning defaults for `gpt-oss-20b` and `qwen35-9b` |
+| task-4.1 | → IN_PROGRESS | S3-backed serving has been retargeted from the retired two-model set to `Qwen/Qwen3.5-122B-A10B-FP8`, `MiniMaxAI/MiniMax-M2.5`, and `Qwen/Qwen3-Coder-Next`; `bootstrap/model-sync.sh` and artifact docs now match the new canonical prefixes |
+| task-4.2 | → IN_PROGRESS | KServe/vLLM serving is being migrated to the three-model `2+4+2` layout on `sxmgpu`; the shared runtime now encodes multi-GPU prerequisites such as `hostIPC`, larger `/dev/shm`, and fast safetensors loading |
+| task-4.3 | ✓ COMPLETE | LiteLLM is live on the public NodePort path with API-key auth; the active GitOps contract now exports `qwen-122b`, `minimax-m25`, `qwen-coder`, and `default` through public predictor upstreams on `sxmgpu` |
 | task-4.4 | → IN_PROGRESS | VictoriaMetrics stack, extras, NVIDIA DCGM exporter, and LiteLLM Prometheus metrics are under live GitOps reconciliation; Grafana NodePort, datasource DNS alignment, and public GPU telemetry scrape fallback were fixed for the live `k8s-vllm-lab` cluster domain |
 | task-4.5 | · NOT_STARTED | Full live integration validation waits on healthy serving and observability convergence |
 

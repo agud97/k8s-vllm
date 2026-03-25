@@ -65,8 +65,8 @@ Relevant specs:
 - FQDNs for in-cluster service-to-service traffic SHOULD derive from inventory-backed cluster DNS configuration rather than hard-coded `cluster.local` literals.
 - ArgoCD applications MUST express dependency order declaratively using supported GitOps mechanisms such as sync waves, app-of-apps ordering, or equivalent reconciliation-safe constructs.
 - The public inference entrypoint MUST terminate at LiteLLM and MUST treat KServe or vLLM as internal upstream services.
-- LiteLLM MUST integrate with the serving layer through internal OpenAI-compatible upstream endpoints for phase 1.
-- The phase-1 LiteLLM upstream contract MUST use internal HTTP endpoints exposing `/v1/chat/completions`, with pinned model aliases for `gpt-oss-20b` and `qwen35-9b`; the default smoke test alias MUST be `qwen35-9b`.
+- LiteLLM MUST integrate with the serving layer through OpenAI-compatible upstream endpoints managed in GitOps.
+- The active LiteLLM upstream contract MUST expose `/v1/chat/completions`, use the pinned model aliases `qwen-122b`, `minimax-m25`, `qwen-coder`, plus `default`, and MUST permit the documented public-fallback endpoint topology when private east-west reachability to `sxmgpu` is not available.
 - Secret material consumed by workloads MUST enter the cluster through Sealed Secrets and standard Kubernetes Secrets derived from them.
 - The design MUST preserve an upgrade path to future multi-node inference without forcing a distributed serving implementation in phase 1.
 - Platform components MUST be deployable independently enough to support failure isolation and targeted reconciliation.
@@ -76,7 +76,7 @@ Relevant specs:
 - Recovery logic and steady-state validation for NVSwitch-based GPU workers MUST account for `nvidia-fabricmanager`, because `nvidia-smi` visibility alone is insufficient to prove that CUDA workloads will initialize successfully.
 - Recovery logic for replacement GPU workers MUST distinguish between successful `kubeadm join` and healthy cross-node pod networking; a `Ready` node is not sufficient evidence if `Cilium` host or endpoint health still depends on unreachable private `InternalIP` addresses.
 - The implementation MUST preserve a GitOps-managed fallback path for GPU serving and GPU observability over public endpoints when the environment cannot provide private L3 reachability from replacement GPU workers to existing node `InternalIP` addresses.
-- LiteLLM configuration for reasoning-capable upstream models MUST pin model-specific defaults that produce normal assistant text in phase-1 UX, rather than exposing raw reasoning or thinking output to `Open WebUI`.
+- LiteLLM configuration for reasoning-capable upstream models MUST be explicit and reviewed, so `Open WebUI` behavior matches the intended UX for each model rather than inheriting accidental runtime defaults.
 
 ### SHOULD
 
@@ -104,8 +104,8 @@ Relevant specs:
 - GitOps control plane MUST be ArgoCD.
 - Secret management for the lab environment MUST use Sealed Secrets.
 - Model serving MUST use KServe with vLLM-compatible serving configuration.
-- Phase 1 model serving MUST use two single-replica, non-distributed `KServe InferenceService` workloads, one pinned to each GPU node.
-- The model sources MUST be pinned to `openai/gpt-oss-20b` and `Qwen/Qwen3.5-9B`.
+- Current model serving MUST use three single-replica, non-distributed `KServe InferenceService` workloads on the active `8x H200` GPU node, with a repository-declared GPU split across the three target models.
+- The model sources MUST be pinned to `Qwen/Qwen3.5-122B-A10B-FP8`, `MiniMaxAI/MiniMax-M2.5`, and `Qwen/Qwen3-Coder-Next`.
 - Public inference access MUST go through LiteLLM using LiteLLM native API key authentication.
 - Observability MUST use VictoriaMetrics Kubernetes stack with 7-day retention and 100Gi persistent storage.
 - GPU observability MUST use an in-cluster exporter compatible with NVIDIA host drivers and the VictoriaMetrics scrape model; NVIDIA DCGM Exporter is the approved implementation path for the lab environment.
@@ -193,7 +193,7 @@ Relevant specs:
 - observability stack DNS-domain alignment for in-cluster datasources and callbacks
 - Static tests MUST run without requiring access to the target cluster.
 - Static tests MUST detect cluster-DNS hard-coding in operator-managed manifests when the inventory declares a non-default DNS domain.
-- Static tests MUST detect missing `LiteLLM` anti-reasoning defaults for `gpt-oss-20b` and `qwen35-9b`.
+- Static tests MUST detect missing active LiteLLM model aliases, missing public-fallback endpoint declarations, or missing multi-GPU runtime settings required by the current serving layout.
 - Static tests MUST detect the absence of the public GPU telemetry scrape path when the repository declares the public-endpoint fallback topology.
 - Post-deployment validation MUST verify:
   - all six nodes are present and Ready

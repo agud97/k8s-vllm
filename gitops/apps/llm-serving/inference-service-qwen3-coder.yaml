@@ -1,7 +1,7 @@
 apiVersion: serving.kserve.io/v1beta1
 kind: InferenceService
 metadata:
-  name: gpt-oss-20b
+  name: qwen3-coder
   namespace: llm
   annotations:
     serving.kserve.io/deploymentMode: Standard
@@ -20,19 +20,23 @@ spec:
       modelFormat:
         name: huggingface
       runtime: vllm-openai-runtime
-      storageUri: s3://llm/models/phase-1/openai__gpt-oss-20b
+      storageUri: s3://llm/models/phase-1/Qwen__Qwen3-Coder-Next
       resources:
         limits:
-          nvidia.com/gpu: "1"
-          cpu: "8"
-          memory: "40Gi"
+          nvidia.com/gpu: "2"
+          cpu: "16"
+          memory: "128Gi"
         requests:
-          cpu: "4"
-          memory: "20Gi"
+          cpu: "8"
+          memory: "64Gi"
       args:
-        - --served-model-name=gpt-oss-20b
+        - --served-model-name=qwen-coder
+        - --tensor-parallel-size=2
         - --dtype=bfloat16
-        - --max-model-len=2048
-        - --gpu-memory-utilization=0.9
-        - --trust-remote-code
-        - --enforce-eager
+        - --max-model-len=131072
+        - --gpu-memory-utilization=0.92
+        - --max-num-seqs=32
+        - --enable-chunked-prefill
+        - --enable-prefix-caching
+        - --enable-auto-tool-choice
+        - --tool-call-parser=qwen3_coder
