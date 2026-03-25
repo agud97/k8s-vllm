@@ -20,7 +20,7 @@ spec:
       modelFormat:
         name: huggingface
       runtime: vllm-openai-runtime
-      storageUri: hf://Qwen/Qwen3.5-9B
+      storageUri: s3://llm/models/phase-1/Qwen__Qwen3.5-9B
       resources:
         limits:
           nvidia.com/gpu: "1"

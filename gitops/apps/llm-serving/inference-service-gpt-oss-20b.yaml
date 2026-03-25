@@ -20,7 +20,7 @@ spec:
       modelFormat:
         name: huggingface
       runtime: vllm-openai-runtime
-      storageUri: hf://openai/gpt-oss-20b
+      storageUri: s3://llm/models/phase-1/openai__gpt-oss-20b
       resources:
         limits:
           nvidia.com/gpu: "1"
