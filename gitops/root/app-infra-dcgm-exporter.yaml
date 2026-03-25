@@ -24,8 +24,8 @@ spec:
         serviceMonitor:
           enabled: false
         kubernetes:
-          enablePodLabels: true
-          enablePodUID: true
+          enablePodLabels: false
+          enablePodUID: false
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
