@@ -51,6 +51,7 @@ Relevant specs:
 - Bootstrap automation MUST be designed as idempotent orchestration steps with explicit inputs, observable outputs, and non-zero exit codes on failure.
 - The agent MUST execute the bootstrap automation against the provided hosts once prerequisites are available, unless blocked by a real infrastructure or credential failure.
 - Inventory and bootstrap logic MUST support worker onboarding in environments where control-plane private IPs are not reachable from replacement workers, using explicit inventory access addresses when required.
+- Cluster DNS domain MUST be declared in inventory and treated as a shared environment variable for any GitOps manifest or chart values that construct in-cluster service FQDNs.
 - Each major platform capability MUST have a clearly defined ownership boundary:
   - cluster bootstrap
   - ArgoCD bootstrap
@@ -61,6 +62,7 @@ Relevant specs:
   - observability
   - validation
 - Reusable configuration MUST be parameterized through values files, inventory variables, or environment files rather than duplicated manifests.
+- FQDNs for in-cluster service-to-service traffic SHOULD derive from inventory-backed cluster DNS configuration rather than hard-coded `cluster.local` literals.
 - ArgoCD applications MUST express dependency order declaratively using supported GitOps mechanisms such as sync waves, app-of-apps ordering, or equivalent reconciliation-safe constructs.
 - The public inference entrypoint MUST terminate at LiteLLM and MUST treat KServe or vLLM as internal upstream services.
 - LiteLLM MUST integrate with the serving layer through internal OpenAI-compatible upstream endpoints for phase 1.
@@ -71,6 +73,7 @@ Relevant specs:
 - Validation logic MUST be encapsulated in dedicated scripts or targets rather than buried in README prose only.
 - Component delivery is not complete until the corresponding live component is installed and validated in the target cluster.
 - Recovery logic for GPU node replacement MUST account for Cilium operator placement, worker-side API reachability, and NVIDIA runtime configuration rather than assuming a pristine first-bootstrap path.
+- Recovery logic and steady-state validation for NVSwitch-based GPU workers MUST account for `nvidia-fabricmanager`, because `nvidia-smi` visibility alone is insufficient to prove that CUDA workloads will initialize successfully.
 
 ### SHOULD
 
@@ -114,6 +117,7 @@ Relevant specs:
 - The deployment stack MUST expose the initial public inference path through `NodePort` on `infra-1` over HTTP by IP.
 - GPU enablement MUST include NVIDIA driver installation, NVIDIA container runtime support, and Kubernetes GPU resource discovery sufficient for `nvidia.com/gpu` scheduling.
 - GPU enablement MUST validate the host with `nvidia-smi` after installation and MUST treat driver or library mismatches as a host-level issue requiring remediation before Kubernetes GPU discovery is considered complete.
+- GPU enablement for NVSwitch-based systems MUST validate that fabric initialization has completed successfully before the node is considered ready for Kubernetes CUDA workloads.
 - GPU resource discovery MUST use the NVIDIA Device Plugin. NVIDIA GPU Operator MUST NOT be used in the active lab deployment path.
 - Container runtime configuration for GPU nodes MUST ensure that containerd exposes an NVIDIA runtime that is actually usable by Kubernetes GPU workloads and device-plugin pods.
 - Conditionally required dependencies of the selected KServe, Knative, or Istio versions, including `cert-manager`, MUST be included only when the chosen implementation actually requires them.
@@ -182,8 +186,10 @@ Relevant specs:
   - Sealed Secrets workflow validation
   - inference authentication behavior
   - inference smoke test behavior
-  - observability stack presence and target coverage
+- observability stack presence and target coverage
+- observability stack DNS-domain alignment for in-cluster datasources and callbacks
 - Static tests MUST run without requiring access to the target cluster.
+- Static tests MUST detect cluster-DNS hard-coding in operator-managed manifests when the inventory declares a non-default DNS domain.
 - Post-deployment validation MUST verify:
   - all six nodes are present and Ready
   - Cilium is active

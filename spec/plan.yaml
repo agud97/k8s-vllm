@@ -69,11 +69,11 @@ plan:
           validation: "Bootstrap is executed against the target hosts and produces a Ready cluster with the currently intended live nodes visible and Cilium active, including safe worker onboarding after partial failure or node replacement."
         - id: task-2.4
           name: "Implement GPU node enablement"
-          description: "Install NVIDIA drivers, NVIDIA container runtime support, and the NVIDIA Device Plugin on GPU nodes, including validation and recovery for reboots, runtime configuration drift, and Cilium dependencies surfaced during node replacement."
+          description: "Install NVIDIA drivers, NVIDIA container runtime support, and the NVIDIA Device Plugin on GPU nodes, including validation and recovery for reboots, runtime configuration drift, Cilium dependencies surfaced during node replacement, and NVSwitch fabric-manager requirements on H200-class hosts."
           artifact: "bootstrap/gpu scripts or playbooks plus GitOps manifests for device plugin if applicable"
           depends_on:
             - task-2.3
-          validation: "GPU enablement is executed on the target hosts, GPU nodes expose `nvidia.com/gpu` resources, runtime configuration is sufficient for the NVIDIA Device Plugin, and the deployment does not depend on NVIDIA GPU Operator."
+          validation: "GPU enablement is executed on the target hosts, GPU nodes expose `nvidia.com/gpu` resources, runtime configuration is sufficient for the NVIDIA Device Plugin, NVSwitch-based hosts pass fabric initialization checks, and the deployment does not depend on NVIDIA GPU Operator."
         - id: task-2.5
           name: "Implement baseline cluster validation"
           description: "Add validation scripts to verify host reachability, cluster readiness, Cilium health, and GPU discovery."
@@ -171,12 +171,12 @@ plan:
           validation: "LiteLLM is actually deployed to the live cluster, requests without valid API keys fail, valid requests route through LiteLLM, and the configured upstream contract matches the specification."
         - id: task-4.4
           name: "Implement VictoriaMetrics stack"
-          description: "Deploy VictoriaMetrics Kubernetes stack with 7-day retention, 100Gi persistent storage, the required metric targets and dashboards, and explicit GPU telemetry collection for active GPU nodes."
+          description: "Deploy VictoriaMetrics Kubernetes stack with 7-day retention, 100Gi persistent storage, the required metric targets and dashboards, explicit GPU telemetry collection for active GPU nodes, and datasource configuration aligned with the cluster DNS domain declared in inventory."
           artifact: "gitops/platform/victoriametrics manifests"
           depends_on:
             - task-3.3
             - task-3.4
-          validation: "VictoriaMetrics is actually deployed to the live cluster, is healthy, PVCs request 100Gi, retention is set to 7 days, required target coverage is present, and GPU metrics are collected through the approved exporter path."
+          validation: "VictoriaMetrics is actually deployed to the live cluster, is healthy, PVCs request 100Gi, retention is set to 7 days, required target coverage is present, GPU metrics are collected through the approved exporter path, and Grafana datasources resolve in-cluster service FQDNs using the actual cluster DNS domain."
         - id: task-4.5
           name: "Implement integration validation"
           description: "Add cluster-dependent validation for serving readiness, LiteLLM auth, S3-backed model access, NodePort reachability, and observability coverage."
@@ -199,13 +199,13 @@ plan:
       tasks:
         - id: task-5.1
           name: "Implement static validation suite"
-          description: "Add static validation for YAML, Helm or Kustomize inputs, shell scripts, and pinned version checks."
+          description: "Add static validation for YAML, Helm or Kustomize inputs, shell scripts, pinned version checks, and cluster-DNS alignment in GitOps manifests that build in-cluster service FQDNs."
           artifact: "tests/static/ and root validation targets"
           depends_on:
             - task-1.4
             - task-3.1
             - task-4.4
-          validation: "Static checks run from the repository without cluster access and fail on malformed manifests, shell issues, or floating versions."
+          validation: "Static checks run from the repository without cluster access and fail on malformed manifests, shell issues, floating versions, or cluster-DNS mismatches between inventory and GitOps manifests."
         - id: task-5.2
           name: "Implement smoke test suite"
           description: "Create the repeatable smoke test for the pinned LiteLLM model alias using the documented prompt and acceptance thresholds."

@@ -287,6 +287,7 @@ Expected result:
 
 - Grafana opens in the browser
 - GPU, LiteLLM, and LLM platform dashboards are visible
+- Grafana dashboards do not show datasource DNS errors for `vmsingle`; if they do, verify that `gitops/root/app-platform-victoriametrics.yaml` uses the same DNS domain as [`inventory/group_vars/k8s_cluster.yml`](inventory/group_vars/k8s_cluster.yml)
 
 ## Failure Checklist
 

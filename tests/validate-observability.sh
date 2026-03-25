@@ -10,15 +10,21 @@ need_cmd() {
 }
 
 check_static() {
+  local cluster_name
+  cluster_name="$(awk '/^cluster_name:/ {print $2}' inventory/group_vars/k8s_cluster.yml)"
+  [[ -n "$cluster_name" ]] || { printf 'cluster_name missing from inventory/group_vars/k8s_cluster.yml\n' >&2; exit 1; }
   grep -q 'chart: victoria-metrics-k8s-stack' gitops/root/app-platform-victoriametrics.yaml || { printf 'victoriametrics chart missing\n' >&2; exit 1; }
   grep -q 'targetRevision: 0.72.5' gitops/root/app-platform-victoriametrics.yaml || { printf 'victoriametrics chart version mismatch\n' >&2; exit 1; }
   grep -q 'storage: 100Gi' gitops/root/app-platform-victoriametrics.yaml || { printf 'victoriametrics pvc size mismatch\n' >&2; exit 1; }
   grep -q 'retentionPeriod: 7d' gitops/root/app-platform-victoriametrics.yaml || { printf 'victoriametrics retention mismatch\n' >&2; exit 1; }
+  grep -q "dnsDomain: ${cluster_name}" gitops/root/app-platform-victoriametrics.yaml || { printf 'victoriametrics dnsDomain does not match cluster_name (%s)\n' "$cluster_name" >&2; exit 1; }
+  grep -q "svc.${cluster_name}:8080" gitops/root/app-platform-victoriametrics.yaml || { printf 'vmalert proxyURL does not match cluster DNS domain (%s)\n' "$cluster_name" >&2; exit 1; }
   grep -q 'victoria-metrics-operator:' gitops/root/app-platform-victoriametrics.yaml || { printf 'victoriametrics operator placement missing\n' >&2; exit 1; }
   grep -q 'kube-state-metrics:' gitops/root/app-platform-victoriametrics.yaml || { printf 'kube-state-metrics placement missing\n' >&2; exit 1; }
   grep -q 'alertmanager:' gitops/root/app-platform-victoriametrics.yaml || { printf 'victoriametrics alertmanager block missing\n' >&2; exit 1; }
   grep -q 'enabled: false' gitops/root/app-platform-victoriametrics.yaml || { printf 'victoriametrics disabled optional components marker missing\n' >&2; exit 1; }
   grep -q 'releaseName: vmstack' gitops/root/app-platform-victoriametrics.yaml || { printf 'victoriametrics release name not shortened\n' >&2; exit 1; }
+  grep -q 'nodePort: 32082' gitops/root/app-platform-victoriametrics.yaml || { printf 'grafana nodePort missing\n' >&2; exit 1; }
   grep -q 'kind: VMServiceScrape' gitops/platform/victoriametrics/vmservicescrape-argocd.yaml || { printf 'argocd scrape missing\n' >&2; exit 1; }
   grep -q 'kind: VMServiceScrape' gitops/platform/victoriametrics/vmservicescrape-kserve-controller.yaml || { printf 'kserve scrape missing\n' >&2; exit 1; }
   grep -q 'kind: VMServiceScrape' gitops/platform/victoriametrics/vmservicescrape-litellm.yaml || { printf 'litellm scrape missing\n' >&2; exit 1; }

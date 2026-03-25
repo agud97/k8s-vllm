@@ -258,6 +258,8 @@ No unresolved missing information remains. The remaining implementation risks ar
 
 24. NVIDIA driver installation on replacement GPU workers may require a reboot before Kubernetes GPU discovery can succeed.
 
+25. The Kubernetes cluster DNS domain may differ from `cluster.local` and must be treated as environment-specific configuration shared consistently between Kubespray inventory and GitOps manifests that reference in-cluster service FQDNs.
+
 ## Edge Cases
 
 1. Only one GPU node is available initially or one GPU node fails after deployment.
@@ -277,6 +279,9 @@ Impact: a design using Ray/LeaderWorkerSet may be required instead of a simple I
 
 6. S3 credentials or endpoint configuration differ from AWS defaults.
 Impact: storage initializer or model pull jobs may fail without custom secret/configuration.
+
+7. A platform chart or custom manifest assumes `cluster.local` while the live cluster uses another DNS domain.
+Impact: in-cluster clients such as Grafana datasources or component-to-component callbacks may fail to resolve service addresses despite healthy services.
 
 7. External access to the selected `NodePort` on `infra-1` is blocked by firewall or provider networking policy.
 Impact: the public inference endpoint will not be reachable even if the cluster is otherwise healthy.

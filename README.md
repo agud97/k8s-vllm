@@ -181,6 +181,7 @@ Example successful response shape:
 
 - URL: `http://<infra-1-public-ip>:32082`
 - Admin credentials are stored in the `monitoring/vmstack-grafana` secret
+- `VictoriaMetrics` and Grafana datasource FQDNs must follow the real cluster DNS domain from [`inventory/group_vars/k8s_cluster.yml`](inventory/group_vars/k8s_cluster.yml), not a hard-coded `cluster.local`
 
 ## Runbooks
 

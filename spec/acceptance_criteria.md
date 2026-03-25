@@ -90,6 +90,8 @@
 
 31b. WHEN a replacement GPU worker is onboarded in an environment where control-plane private IPs are not reachable from that worker, THEN the bootstrap and recovery workflow is executed, SHALL provide a documented and working API access path for the replacement worker and SHALL still result in discoverable `nvidia.com/gpu` capacity.
 
+31c. WHEN an NVSwitch-based GPU worker such as an `8x H200` host is onboarded, THEN post-install validation is executed, SHALL confirm successful fabric initialization and SHALL not accept the node as ready for CUDA workloads based on `nvidia-smi -L` alone.
+
 32. WHEN the cluster is asked to serve inference after the model is reported ready, THEN a smoke-test request is sent through LiteLLM, SHALL return `HTTP 200`, a non-empty generated text field, and no infrastructure or runtime error in the response.
 
 33. WHEN the smoke-test request uses a short neutral prompt such as "Напиши одно короткое предложение о Kubernetes.", THEN the request is processed by the deployed model, SHALL return non-empty model-generated text rather than an infrastructure error.
@@ -139,6 +141,8 @@
 52a. WHEN GPU observability is reviewed after deployment, THEN the live cluster resources are inspected, SHALL show a GPU metrics exporter running on active GPU worker nodes and exposing scrapeable NVIDIA telemetry to the observability stack.
 
 53. WHEN the operator opens the observability dashboards, THEN dashboard coverage is reviewed, SHALL provide dashboard coverage for these monitored areas: cluster nodes, Kubernetes workloads, Kubernetes control plane, Cilium, Istio, ArgoCD, LiteLLM, and KServe or vLLM.
+
+53a. WHEN the observability dashboards are opened after reconciliation, THEN the Grafana datasources are exercised, SHALL resolve the in-cluster VictoriaMetrics service using the actual cluster DNS domain rather than a hard-coded `cluster.local` assumption.
 
 54. WHEN the observability deliverable is inspected, THEN the deployed scope is reviewed, SHALL include metrics and dashboards and SHALL not require alerting, tracing, or centralized logging for acceptance.
 

@@ -52,6 +52,7 @@ Important inventory lessons:
 - the new node must be placed into `kube_node` and `gpu`
 - control-plane nodes must have explicit `access_ip` when workers join over public IPs
 - host-specific SSH users must not be overridden by a global `ansible_user: root`
+- the cluster DNS domain must be explicit in inventory and reused by GitOps manifests that build service FQDNs; assuming `cluster.local` will break Grafana and other in-cluster clients on clusters whose DNS domain follows `cluster_name`
 
 ## Step 1. Verify Repository And Cluster Access
 

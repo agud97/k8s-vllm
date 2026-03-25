@@ -39,7 +39,7 @@
 | task-4.1 | → IN_PROGRESS | GitOps serving manifests now point to S3-backed model URIs; `gpt-oss` artifacts are complete and `qwen` required a second rollout after its large shard files appeared in S3 |
 | task-4.2 | → IN_PROGRESS | KServe/vLLM serving recovered from NVSwitch CUDA initialization failures on `sxmgpu`; `gpt-oss-20b` is Ready and `qwen35-9b` is reloading from the now-complete S3 prefix |
 | task-4.3 | ✓ COMPLETE | LiteLLM is live on the public NodePort path with API-key auth and internal upstream routing |
-| task-4.4 | → IN_PROGRESS | VictoriaMetrics stack, extras, NVIDIA DCGM exporter, and LiteLLM Prometheus metrics are under live GitOps reconciliation; observability stack is healthy while final serving validation still waits on S3-backed model availability |
+| task-4.4 | → IN_PROGRESS | VictoriaMetrics stack, extras, NVIDIA DCGM exporter, and LiteLLM Prometheus metrics are under live GitOps reconciliation; Grafana NodePort and datasource DNS alignment were fixed for the live `k8s-vllm-lab` cluster domain while final serving validation still waits on S3-backed model availability |
 | task-4.5 | · NOT_STARTED | Full live integration validation waits on healthy serving and observability convergence |
 
 ### Phase 5: Final Validation And Operator Documentation

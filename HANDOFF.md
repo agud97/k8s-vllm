@@ -108,6 +108,7 @@ Alternative alias available through `LiteLLM`:
 - replacement GPU nodes may join successfully but remain broken until `cilium-operator` is running on live nodes and the `CiliumNode` object has a populated `spec.ipam.podCIDRs`
 - after NVIDIA toolkit configuration, `containerd` must expose `default_runtime_name = "nvidia"` for GPU-device-plugin pods to see NVML correctly
 - NVSwitch hosts such as `8x H200` systems also need `nvidia-fabricmanager`; `gpu-prep` must finish with `nvidia-smi -q` showing `Fabric -> State: Completed` and `Status: Success`
+- `VictoriaMetrics` and Grafana datasource FQDNs must use the actual cluster DNS domain from [`inventory/group_vars/k8s_cluster.yml`](inventory/group_vars/k8s_cluster.yml); this cluster uses `k8s-vllm-lab`, not `cluster.local`
 - S3 model sync is only complete after the real `model.safetensors-*` shard objects exist; Hugging Face `.metadata` side files alone are not enough for `vLLM`
 - `bootstrap/app-secrets.sh` is required for reproducible creation of:
   - `llm-s3-credentials`
