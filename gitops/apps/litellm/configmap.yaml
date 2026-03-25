@@ -12,6 +12,9 @@ data:
           api_base: http://89.108.125.7:32090/v1
           api_key: dummy
           include_reasoning: false
+          reasoning_effort: low
+          allowed_openai_params:
+            - reasoning_effort
       - model_name: qwen35-9b
         litellm_params:
           model: openai/qwen35-9b
