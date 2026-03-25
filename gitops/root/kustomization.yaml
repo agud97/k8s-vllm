@@ -11,6 +11,7 @@ resources:
   - app-platform-knative-serving.yaml
   - app-platform-kserve.yaml
   - app-platform-victoriametrics.yaml
+  - app-platform-victoriametrics-extras.yaml
   - app-app-litellm.yaml
   - app-app-openwebui.yaml
   - app-app-llm-serving.yaml

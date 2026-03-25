@@ -7,49 +7,29 @@ metadata:
     argocd.argoproj.io/sync-wave: "22"
 spec:
   project: platform
-  sources:
-    - repoURL: https://victoriametrics.github.io/helm-charts
-      chart: victoria-metrics-k8s-stack
-      targetRevision: 0.72.5
-      helm:
-        releaseName: platform-victoriametrics
-        values: |
-          argocdReleaseOverride: platform-victoriametrics
-          defaultDashboards:
-            enabled: true
-            annotations:
-              argocd.argoproj.io/sync-options: ServerSideApply=true
-          vmsingle:
-            enabled: true
-            spec:
-              retentionPeriod: 7d
-              storage:
-                storageClassName: openebs-hostpath
-                accessModes:
-                  - ReadWriteOnce
-                resources:
-                  requests:
-                    storage: 100Gi
-              nodeSelector:
-                node-role.kubernetes.io/infra: ""
-              tolerations:
-                - key: node-role.kubernetes.io/infra
-                  operator: Equal
-                  value: "true"
-                  effect: NoSchedule
-          vmagent:
-            spec:
-              externalLabels:
-                cluster: k8s-vllm-lab
-              nodeSelector:
-                node-role.kubernetes.io/infra: ""
-              tolerations:
-                - key: node-role.kubernetes.io/infra
-                  operator: Equal
-                  value: "true"
-                  effect: NoSchedule
-          grafana:
-            enabled: true
+  source:
+    repoURL: https://victoriametrics.github.io/helm-charts
+    chart: victoria-metrics-k8s-stack
+    targetRevision: 0.72.5
+    helm:
+      releaseName: platform-victoriametrics
+      values: |
+        argocdReleaseOverride: platform-victoriametrics
+        defaultDashboards:
+          enabled: true
+          annotations:
+            argocd.argoproj.io/sync-options: ServerSideApply=true
+        vmsingle:
+          enabled: true
+          spec:
+            retentionPeriod: 7d
+            storage:
+              storageClassName: openebs-hostpath
+              accessModes:
+                - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 100Gi
             nodeSelector:
               node-role.kubernetes.io/infra: ""
             tolerations:
@@ -57,9 +37,26 @@ spec:
                 operator: Equal
                 value: "true"
                 effect: NoSchedule
-    - repoURL: https://github.com/agud97/k8s-vllm.git
-      targetRevision: main
-      path: gitops/platform/victoriametrics
+        vmagent:
+          spec:
+            externalLabels:
+              cluster: k8s-vllm-lab
+            nodeSelector:
+              node-role.kubernetes.io/infra: ""
+            tolerations:
+              - key: node-role.kubernetes.io/infra
+                operator: Equal
+                value: "true"
+                effect: NoSchedule
+        grafana:
+          enabled: true
+          nodeSelector:
+            node-role.kubernetes.io/infra: ""
+          tolerations:
+            - key: node-role.kubernetes.io/infra
+              operator: Equal
+              value: "true"
+              effect: NoSchedule
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
