@@ -354,3 +354,30 @@ If ArgoCD is unhealthy:
 kubectl --kubeconfig local/runtime/admin.conf get applications -n argocd
 kubectl --kubeconfig local/runtime/admin.conf describe app app-llm-serving -n argocd
 ```
+
+If the `LiteLLM` Grafana dashboard shows `No data`:
+
+- first verify that `vmagent` sees a real scrape target, not `0/0 up`
+- the live failure mode on this cluster was:
+  - `VMServiceScrape/litellm-metrics` used `/metrics` while the current `LiteLLM` build redirects to `/metrics/`
+  - `Service/litellm` had no `app.kubernetes.io/name=litellm` label, so the `VMServiceScrape` selector matched zero Services
+- the GitOps fixes were:
+  - [`gitops/platform/victoriametrics/vmservicescrape-litellm.yaml`](gitops/platform/victoriametrics/vmservicescrape-litellm.yaml) -> `path: /metrics/`
+  - [`gitops/apps/litellm/service.yaml`](gitops/apps/litellm/service.yaml) -> add `metadata.labels.app.kubernetes.io/name=litellm`
+- the fixing revisions were:
+  - `86c65e1` `Fix LiteLLM metrics scrape path`
+  - `860e67a` `Label LiteLLM service for scraping`
+
+Check:
+
+```bash
+kubectl --kubeconfig local/runtime/admin.conf -n monitoring get vmservicescrape litellm-metrics -o jsonpath='{.spec.endpoints[0].path}{" "}{.status.updateStatus}{"\n"}'
+kubectl --kubeconfig local/runtime/admin.conf -n llm get svc litellm -o yaml | sed -n '1,80p'
+kubectl --kubeconfig local/runtime/admin.conf -n monitoring exec deploy/vmagent-vmstack-victoria-metrics-k8s-stack -- wget -qO- http://127.0.0.1:8429/targets | egrep 'litellm-metrics|litellm'
+```
+
+Expected result:
+
+- scrape path is `/metrics/`
+- `Service/litellm` has label `app.kubernetes.io/name: litellm`
+- `vmagent` shows `job=serviceScrape/monitoring/litellm-metrics/0 (1/1 up)`

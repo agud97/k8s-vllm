@@ -127,6 +127,13 @@ Alternative alias available through `LiteLLM`:
   - `minimax-m25` via `32091`
   - `qwen-coder` via `32092`
   - alias `default` maps to `qwen-122b`
+- `LiteLLM` observability has one specific gotcha that already happened live:
+  - `LiteLLM` metrics are exposed at `/metrics/`, not `/metrics`
+  - `VMServiceScrape/litellm-metrics` must therefore use `path: /metrics/`
+  - `Service/litellm` must carry label `app.kubernetes.io/name=litellm`, otherwise the `VMServiceScrape` selector resolves to `0` Services and Grafana shows `No data`
+  - the GitOps fixes were shipped in:
+    - `86c65e1` `Fix LiteLLM metrics scrape path`
+    - `860e67a` `Label LiteLLM service for scraping`
 
 ## Fast Recovery Checks
 
