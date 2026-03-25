@@ -35,7 +35,7 @@ They are ignored by Git.
 
 Pinned versions are declared in:
 
-- [`docs/dependency-matrix.yaml`](/root/codex/k8s-cloud/docs/dependency-matrix.yaml)
+- [`docs/dependency-matrix.yaml`](docs/dependency-matrix.yaml)
 
 ## Bootstrap Flow
 
@@ -177,13 +177,18 @@ Example successful response shape:
 - URL: `http://<infra-1-public-ip>:32081`
 - Admin credentials are sourced from `local/llm.env` and bootstrapped via `./bootstrap/app-secrets.sh`
 
+## Grafana
+
+- URL: `http://<infra-1-public-ip>:32082`
+- Admin credentials are stored in the `monitoring/vmstack-grafana` secret
+
 ## Runbooks
 
-- [`docs/architecture.md`](/root/codex/k8s-cloud/docs/architecture.md)
-- [`docs/runbooks/sealed-secrets.md`](/root/codex/k8s-cloud/docs/runbooks/sealed-secrets.md)
-- [`docs/runbooks/storage.md`](/root/codex/k8s-cloud/docs/runbooks/storage.md)
-- [`docs/runbooks/ingress.md`](/root/codex/k8s-cloud/docs/runbooks/ingress.md)
-- [`docs/runbooks/model-artifacts.md`](/root/codex/k8s-cloud/docs/runbooks/model-artifacts.md)
-- [`RUNBOOK.md`](/root/codex/k8s-cloud/RUNBOOK.md)
-- [`HANDOFF.md`](/root/codex/k8s-cloud/HANDOFF.md)
-- [`Release.md`](/root/codex/k8s-cloud/Release.md)
+- [`docs/architecture.md`](docs/architecture.md)
+- [`docs/runbooks/sealed-secrets.md`](docs/runbooks/sealed-secrets.md)
+- [`docs/runbooks/storage.md`](docs/runbooks/storage.md)
+- [`docs/runbooks/ingress.md`](docs/runbooks/ingress.md)
+- [`docs/runbooks/model-artifacts.md`](docs/runbooks/model-artifacts.md)
+- [`RUNBOOK.md`](RUNBOOK.md)
+- [`HANDOFF.md`](HANDOFF.md)
+- [`Release.md`](Release.md)

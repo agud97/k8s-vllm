@@ -39,13 +39,13 @@ Assumptions from this incident:
 
 These files were changed before live node onboarding:
 
-- [`local/hosts.yml`](/root/codex/k8s-cloud/local/hosts.yml)
-- [`inventory/group_vars/all.yml`](/root/codex/k8s-cloud/inventory/group_vars/all.yml)
-- [`bootstrap/playbooks/host-prep.yml`](/root/codex/k8s-cloud/bootstrap/playbooks/host-prep.yml)
-- [`bootstrap/playbooks/gpu-prep.yml`](/root/codex/k8s-cloud/bootstrap/playbooks/gpu-prep.yml)
-- [`tests/validate-cluster.sh`](/root/codex/k8s-cloud/tests/validate-cluster.sh)
-- [`gitops/apps/llm-serving/inference-service.yaml`](/root/codex/k8s-cloud/gitops/apps/llm-serving/inference-service.yaml)
-- [`gitops/apps/llm-serving/inference-service-gpt-oss-20b.yaml`](/root/codex/k8s-cloud/gitops/apps/llm-serving/inference-service-gpt-oss-20b.yaml)
+- [`local/hosts.yml`](../../local/hosts.yml)
+- [`inventory/group_vars/all.yml`](../../inventory/group_vars/all.yml)
+- [`bootstrap/playbooks/host-prep.yml`](../../bootstrap/playbooks/host-prep.yml)
+- [`bootstrap/playbooks/gpu-prep.yml`](../../bootstrap/playbooks/gpu-prep.yml)
+- [`tests/validate-cluster.sh`](../../tests/validate-cluster.sh)
+- [`gitops/apps/llm-serving/inference-service.yaml`](../../gitops/apps/llm-serving/inference-service.yaml)
+- [`gitops/apps/llm-serving/inference-service-gpt-oss-20b.yaml`](../../gitops/apps/llm-serving/inference-service-gpt-oss-20b.yaml)
 
 Important inventory lessons:
 
@@ -701,6 +701,16 @@ If the events show old hostname selectors, reconcile the manifests that pin GPU 
 
 - Cause: `containerd` is not using NVIDIA runtime for CRI
 - Fix: configure NVIDIA runtime and ensure `default_runtime_name = "nvidia"`, then restart `containerd` and `kubelet`
+
+`vLLM` fails with `cudaGetDeviceCount() ... Error 802: system not yet initialized` on NVSwitch hosts
+
+- Cause: NVSwitch fabric is not activated yet even though `nvidia-smi -L` and `nvidia.com/gpu` already look healthy
+- Fix: install and start `nvidia-fabricmanager`, then verify `nvidia-smi -q` reports `Fabric -> State: Completed` and `Status: Success`; if fabric is still `In Progress`, complete a reboot/revalidation cycle
+
+`vLLM` fails with `Cannot find any model weights with /mnt/models`
+
+- Cause: KServe downloaded an incomplete S3 prefix where only Hugging Face `.metadata` side files existed and the actual `model.safetensors-*` shards were still missing
+- Fix: wait for shard upload to finish, confirm the real shard objects exist in S3, then recycle the affected predictor pod so it downloads the completed prefix
 
 ## Final Validation Checklist
 

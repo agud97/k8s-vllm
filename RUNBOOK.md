@@ -21,19 +21,19 @@ Target roles:
 
 - `cp-1`, `cp-2`, `cp-3`
 - `infra-1`
-- GPU workers grouped under `gpu` in [`local/hosts.yml`](/root/codex/k8s-cloud/local/hosts.yml)
+- GPU workers grouped under `gpu` in [`local/hosts.yml`](local/hosts.yml)
 
 Important inventory note:
 
-- if worker nodes can reach the control plane only through public IPs, set `access_ip` for `cp-1`, `cp-2`, and `cp-3` to those public IPs in [`local/hosts.yml`](/root/codex/k8s-cloud/local/hosts.yml)
+- if worker nodes can reach the control plane only through public IPs, set `access_ip` for `cp-1`, `cp-2`, and `cp-3` to those public IPs in [`local/hosts.yml`](local/hosts.yml)
 
 ## 1. Fill Local Files
 
 Fill:
 
-- [`local/hosts.yml`](/root/codex/k8s-cloud/local/hosts.yml)
-- [`local/s3.env`](/root/codex/k8s-cloud/local/s3.env)
-- [`local/llm.env`](/root/codex/k8s-cloud/local/llm.env)
+- [`local/hosts.yml`](local/hosts.yml)
+- [`local/s3.env`](local/s3.env)
+- [`local/llm.env`](local/llm.env)
 
 Required values:
 
@@ -97,7 +97,7 @@ You should see:
 
 - `3` control-plane nodes
 - `1` infra node
-- the GPU nodes currently declared in [`local/hosts.yml`](/root/codex/k8s-cloud/local/hosts.yml)
+- the GPU nodes currently declared in [`local/hosts.yml`](local/hosts.yml)
 - all live nodes `Ready`
 
 ## 6. Prepare GPU Nodes
@@ -264,12 +264,29 @@ http://<infra-public-ip>:32081
 
 Credentials come from:
 
-- [`local/llm.env`](/root/codex/k8s-cloud/local/llm.env)
+- [`local/llm.env`](local/llm.env)
 
 Expected result:
 
 - login works
 - Open WebUI uses internal `LiteLLM`
+
+## 15. Open Grafana
+
+URL:
+
+```text
+http://<infra-public-ip>:32082
+```
+
+Credentials come from:
+
+- `monitoring/vmstack-grafana` secret
+
+Expected result:
+
+- Grafana opens in the browser
+- GPU, LiteLLM, and LLM platform dashboards are visible
 
 ## Failure Checklist
 
@@ -277,7 +294,7 @@ Expected result:
 
 For future replacement or onboarding of GPU nodes, use:
 
-- [`docs/runbooks/gpu-node-replacement.md`](/root/codex/k8s-cloud/docs/runbooks/gpu-node-replacement.md)
+- [`docs/runbooks/gpu-node-replacement.md`](docs/runbooks/gpu-node-replacement.md)
 
 That runbook captures the live `sxmgpu` onboarding, including:
 

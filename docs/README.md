@@ -4,6 +4,6 @@ Operator runbooks, dependency references, architecture, and implementation-facin
 
 Primary operator docs:
 
-- [`RUNBOOK.md`](/root/codex/k8s-cloud/RUNBOOK.md)
-- [`docs/runbooks/README.md`](/root/codex/k8s-cloud/docs/runbooks/README.md)
-- [`docs/runbooks/gpu-node-replacement.md`](/root/codex/k8s-cloud/docs/runbooks/gpu-node-replacement.md)
+- [`RUNBOOK.md`](../RUNBOOK.md)
+- [`docs/runbooks/README.md`](runbooks/README.md)
+- [`docs/runbooks/gpu-node-replacement.md`](runbooks/gpu-node-replacement.md)

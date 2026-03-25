@@ -72,6 +72,9 @@ spec:
                 effect: NoSchedule
         grafana:
           enabled: true
+          service:
+            type: NodePort
+            nodePort: 32082
           nodeSelector:
             node-role.kubernetes.io/infra: ""
           tolerations:

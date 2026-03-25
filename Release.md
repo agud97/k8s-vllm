@@ -120,8 +120,8 @@
 
 - `spec/proposal.md` remains the original source discussion and may describe superseded choices.
 - The operational source of truth for new work is:
-  - [`spec/requirements.md`](/root/codex/k8s-cloud/spec/requirements.md)
-  - [`spec/acceptance_criteria.md`](/root/codex/k8s-cloud/spec/acceptance_criteria.md)
-  - [`spec/constraints.md`](/root/codex/k8s-cloud/spec/constraints.md)
-  - [`spec/plan.yaml`](/root/codex/k8s-cloud/spec/plan.yaml)
-  - [`HANDOFF.md`](/root/codex/k8s-cloud/HANDOFF.md)
+  - [`spec/requirements.md`](spec/requirements.md)
+  - [`spec/acceptance_criteria.md`](spec/acceptance_criteria.md)
+  - [`spec/constraints.md`](spec/constraints.md)
+  - [`spec/plan.yaml`](spec/plan.yaml)
+  - [`HANDOFF.md`](HANDOFF.md)

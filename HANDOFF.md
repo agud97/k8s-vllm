@@ -8,18 +8,18 @@ This file is the shortest path for a new agent or operator to continue work from
 
 Use these files first:
 
-- [`AGENTS.md`](/root/codex/k8s-cloud/AGENTS.md)
-- [`README.md`](/root/codex/k8s-cloud/README.md)
-- [`spec/plan.yaml`](/root/codex/k8s-cloud/spec/plan.yaml)
-- [`spec/requirements.md`](/root/codex/k8s-cloud/spec/requirements.md)
-- [`docs/dependency-matrix.yaml`](/root/codex/k8s-cloud/docs/dependency-matrix.yaml)
+- [`AGENTS.md`](AGENTS.md)
+- [`README.md`](README.md)
+- [`spec/plan.yaml`](spec/plan.yaml)
+- [`spec/requirements.md`](spec/requirements.md)
+- [`docs/dependency-matrix.yaml`](docs/dependency-matrix.yaml)
 
 ## Current Intended Platform Shape
 
 - `3` control-plane nodes
 - `1` infra node
 - current live topology: `1` GPU worker node named `sxmgpu` with `8x NVIDIA H200`
-- original plan topology: `2` GPU worker nodes; this is now an approved live deviation recorded in [`spec/status.md`](/root/codex/k8s-cloud/spec/status.md)
+- original plan topology: `2` GPU worker nodes; this is now an approved live deviation recorded in [`spec/status.md`](spec/status.md)
 - `Kubernetes + Cilium + Istio + ArgoCD + Sealed Secrets + OpenEBS + KServe + vLLM + LiteLLM + Open WebUI + VictoriaMetrics`
 
 Phase-1 serving layout:
@@ -30,15 +30,15 @@ Phase-1 serving layout:
 
 Primary operational recovery doc for this topology change:
 
-- [`docs/runbooks/gpu-node-replacement.md`](/root/codex/k8s-cloud/docs/runbooks/gpu-node-replacement.md)
+- [`docs/runbooks/gpu-node-replacement.md`](docs/runbooks/gpu-node-replacement.md)
 
 ## Required Local Files
 
 These files must exist and are intentionally not committed:
 
-- [`local/hosts.yml`](/root/codex/k8s-cloud/local/hosts.yml)
-- [`local/s3.env`](/root/codex/k8s-cloud/local/s3.env)
-- [`local/llm.env`](/root/codex/k8s-cloud/local/llm.env)
+- [`local/hosts.yml`](local/hosts.yml)
+- [`local/s3.env`](local/s3.env)
+- [`local/llm.env`](local/llm.env)
 
 What they contain:
 
@@ -74,6 +74,7 @@ kubectl --kubeconfig local/runtime/admin.conf get inferenceservice -n llm -o wid
 
 - `LiteLLM`: `http://<infra-public-ip>:32080`
 - `Open WebUI`: `http://<infra-public-ip>:32081`
+- `Grafana`: `http://<infra-public-ip>:32082`
 
 ## Default Runtime Validation
 
@@ -106,6 +107,8 @@ Alternative alias available through `LiteLLM`:
 - if a worker can reach the control plane only through public IPs, `local/hosts.yml` must set `access_ip` for `cp-1`, `cp-2`, and `cp-3`; otherwise Kubespray renders worker-side `nginx-proxy` upstreams to unreachable private IPs
 - replacement GPU nodes may join successfully but remain broken until `cilium-operator` is running on live nodes and the `CiliumNode` object has a populated `spec.ipam.podCIDRs`
 - after NVIDIA toolkit configuration, `containerd` must expose `default_runtime_name = "nvidia"` for GPU-device-plugin pods to see NVML correctly
+- NVSwitch hosts such as `8x H200` systems also need `nvidia-fabricmanager`; `gpu-prep` must finish with `nvidia-smi -q` showing `Fabric -> State: Completed` and `Status: Success`
+- S3 model sync is only complete after the real `model.safetensors-*` shard objects exist; Hugging Face `.metadata` side files alone are not enough for `vLLM`
 - `bootstrap/app-secrets.sh` is required for reproducible creation of:
   - `llm-s3-credentials`
   - `litellm-auth`
@@ -133,4 +136,4 @@ If needed, recreate runtime secrets:
 
 - dual-model serving layout is reflected in implementation, but the current live cluster uses one replacement GPU node `sxmgpu`
 - current `main` branch is the deployment source for `ArgoCD`
-- use [`Release.md`](/root/codex/k8s-cloud/Release.md) for the platform change history
+- use [`Release.md`](Release.md) for the platform change history

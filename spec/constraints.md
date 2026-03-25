@@ -1,9 +1,9 @@
 # Technical Constraints
 
 Relevant specs:
-- [requirements.md](/root/codex/k8s-cloud/spec/requirements.md)
-- [acceptance_criteria.md](/root/codex/k8s-cloud/spec/acceptance_criteria.md)
-- [proposal.md](/root/codex/k8s-cloud/spec/proposal.md)
+- [requirements.md](requirements.md)
+- [acceptance_criteria.md](acceptance_criteria.md)
+- [proposal.md](proposal.md)
 
 ## 1. Project Structure
 

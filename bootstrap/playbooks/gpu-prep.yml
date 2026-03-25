@@ -15,6 +15,7 @@
       ansible.builtin.apt:
         name:
           - nvidia-driver-570
+          - nvidia-fabricmanager-570
           - ubuntu-drivers-common
         state: present
         update_cache: true
@@ -142,3 +143,85 @@
           - nvidia_smi_final.rc == 0
           - "'GPU ' in nvidia_smi_final.stdout"
         fail_msg: "GPU preparation completed but nvidia-smi does not report visible GPUs."
+
+    - name: Detect NVSwitch topology
+      ansible.builtin.command:
+        argv:
+          - nvidia-smi
+          - topo
+          - -m
+      register: nvidia_topology
+      changed_when: false
+      failed_when: false
+
+    - name: Enable and start NVIDIA Fabric Manager on NVSwitch systems
+      ansible.builtin.service:
+        name: nvidia-fabricmanager
+        state: started
+        enabled: true
+      when:
+        - nvidia_topology.rc == 0
+        - "'NV' in (nvidia_topology.stdout | default(''))"
+
+    - name: Verify NVIDIA Fabric Manager on NVSwitch systems
+      ansible.builtin.command:
+        argv:
+          - systemctl
+          - is-active
+          - nvidia-fabricmanager
+      register: fabricmanager_status
+      changed_when: false
+      when:
+        - nvidia_topology.rc == 0
+        - "'NV' in (nvidia_topology.stdout | default(''))"
+
+    - name: Assert NVIDIA Fabric Manager is active on NVSwitch systems
+      ansible.builtin.assert:
+        that:
+          - fabricmanager_status.stdout == "active"
+        fail_msg: "NVSwitch topology detected but nvidia-fabricmanager is not active."
+      when:
+        - nvidia_topology.rc == 0
+        - "'NV' in (nvidia_topology.stdout | default(''))"
+
+    - name: Inspect NVIDIA fabric state on NVSwitch systems
+      ansible.builtin.command:
+        argv:
+          - nvidia-smi
+          - -q
+      register: nvidia_fabric_state
+      changed_when: false
+      when:
+        - nvidia_topology.rc == 0
+        - "'NV' in (nvidia_topology.stdout | default(''))"
+
+    - name: Reboot NVSwitch systems when fabric registration is still incomplete
+      ansible.builtin.reboot:
+        msg: "Reboot triggered by gpu-prep after NVIDIA Fabric Manager activation"
+        reboot_timeout: 1800
+      when:
+        - nvidia_topology.rc == 0
+        - "'NV' in (nvidia_topology.stdout | default(''))"
+        - "'State                             : In Progress' in (nvidia_fabric_state.stdout | default(''))"
+
+    - name: Re-check NVIDIA fabric state on NVSwitch systems
+      ansible.builtin.command:
+        argv:
+          - nvidia-smi
+          - -q
+      register: nvidia_fabric_state_final
+      changed_when: false
+      when:
+        - nvidia_topology.rc == 0
+        - "'NV' in (nvidia_topology.stdout | default(''))"
+
+    - name: Assert NVIDIA fabric registration completed on NVSwitch systems
+      ansible.builtin.assert:
+        that:
+          - "'State                             : In Progress' not in (nvidia_fabric_state_final.stdout | default(''))"
+          - "'State                             : Completed' in (nvidia_fabric_state_final.stdout | default(''))"
+          - "'Status                            : Success' in (nvidia_fabric_state_final.stdout | default(''))"
+        fail_msg: "NVSwitch topology detected but GPU fabric registration is incomplete after gpu-prep."
+      when:
+        - nvidia_topology.rc == 0
+        - "'NV' in (nvidia_topology.stdout | default(''))"

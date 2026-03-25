@@ -7,7 +7,7 @@ This lab uses Sealed Secrets for GitOps-compatible secret delivery.
 ## Controller Installation
 
 - The controller is installed by `bootstrap/sealed-secrets-bootstrap.sh`.
-- The version is pinned in [`docs/dependency-matrix.yaml`](/root/codex/k8s-cloud/docs/dependency-matrix.yaml).
+- The version is pinned in [`docs/dependency-matrix.yaml`](../dependency-matrix.yaml).
 
 ## Key Preservation
 
