@@ -12,7 +12,7 @@ spec:
       app.kubernetes.io/name: litellm
   endpoints:
     - port: http
-      path: /metrics
+      path: /metrics/
       interval: 30s
       scrapeTimeout: 10s
   jobLabel: app.kubernetes.io/name
