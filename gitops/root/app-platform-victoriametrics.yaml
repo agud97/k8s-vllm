@@ -17,7 +17,7 @@ spec:
         argocdReleaseOverride: vmstack
         global:
           cluster:
-            dnsDomain: cluster.local
+            dnsDomain: k8s-vllm-lab
         defaultDashboards:
           enabled: true
           annotations:
@@ -46,7 +46,7 @@ spec:
           enabled: true
           spec:
             extraArgs:
-              vmalert.proxyURL: http://vmalert-vmstack-victoria-metrics-k8s-stack.monitoring.svc.cluster.local:8080
+              vmalert.proxyURL: http://vmalert-vmstack-victoria-metrics-k8s-stack.monitoring.svc.k8s-vllm-lab:8080
             retentionPeriod: 7d
             storage:
               storageClassName: openebs-hostpath
