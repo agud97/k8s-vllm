@@ -12,9 +12,9 @@ spec:
     chart: victoria-metrics-k8s-stack
     targetRevision: 0.72.5
     helm:
-      releaseName: platform-victoriametrics
+      releaseName: vmstack
       values: |
-        argocdReleaseOverride: platform-victoriametrics
+        argocdReleaseOverride: vmstack
         defaultDashboards:
           enabled: true
           annotations:
