@@ -3,6 +3,8 @@ kind: Service
 metadata:
   name: litellm
   namespace: llm
+  labels:
+    app.kubernetes.io/name: litellm
 spec:
   type: NodePort
   selector:
