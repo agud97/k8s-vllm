@@ -42,7 +42,8 @@ spec:
         vmsingle:
           enabled: true
           spec:
-            extraArgs: {}
+            extraArgs:
+              vmalert.proxyURL: http://vmalert-vmstack-victoria-metrics-k8s-stack.monitoring.svc.cluster.local.:8080
             retentionPeriod: 7d
             storage:
               storageClassName: openebs-hostpath
