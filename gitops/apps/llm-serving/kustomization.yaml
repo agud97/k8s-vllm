@@ -6,3 +6,5 @@ resources:
   - serviceaccount.yaml
   - inference-service.yaml
   - inference-service-gpt-oss-20b.yaml
+  - service-gpt-oss-20b-public.yaml
+  - service-qwen35-9b-public.yaml

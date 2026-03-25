@@ -6,8 +6,9 @@ resources:
   - dashboard-gpu-overview.yaml
   - dashboard-llm-platform-overview.yaml
   - dashboard-litellm-overview.yaml
+  - service-dcgm-exporter-public.yaml
   - vmservicescrape-argocd.yaml
-  - vmservicescrape-dcgm-exporter.yaml
   - vmservicescrape-kserve-controller.yaml
   - vmservicescrape-litellm.yaml
   - vmservicescrape-llmisvc-controller.yaml
+  - vmstaticscrape-dcgm-exporter-public.yaml

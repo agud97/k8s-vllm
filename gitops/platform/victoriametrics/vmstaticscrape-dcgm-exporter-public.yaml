@@ -1,0 +1,17 @@
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMStaticScrape
+metadata:
+  name: dcgm-exporter-public
+  namespace: monitoring
+spec:
+  jobName: dcgm-exporter-public
+  targetEndpoints:
+    - targets:
+        - 89.108.125.7:32094
+      labels:
+        instance: sxmgpu
+        job: dcgm-exporter-public
+      path: /metrics
+      scheme: http
+      interval: 30s
+      scrapeTimeout: 10s
