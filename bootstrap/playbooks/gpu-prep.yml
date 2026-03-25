@@ -1,7 +1,7 @@
 ---
 - name: Prepare GPU nodes for Kubernetes scheduling
   hosts: gpu
-  become: false
+  become: true
   gather_facts: true
   tasks:
     - name: Assert supported operating system
@@ -75,8 +75,70 @@
                 BinaryName = '/usr/bin/nvidia-container-runtime'
                 SystemdCgroup = true
 
+    - name: Configure NVIDIA runtime with nvidia-ctk
+      ansible.builtin.command:
+        argv:
+          - nvidia-ctk
+          - runtime
+          - configure
+          - --runtime=containerd
+          - --config=/etc/containerd/config.toml
+          - --set-as-default=false
+
+    - name: Force NVIDIA runtime as containerd default runtime
+      ansible.builtin.replace:
+        path: /etc/containerd/conf.d/99-nvidia.toml
+        regexp: 'default_runtime_name = "runc"'
+        replace: 'default_runtime_name = "nvidia"'
+
+    - name: Ensure CNI bin directory ownership is safe for Cilium init containers
+      ansible.builtin.file:
+        path: /opt/cni/bin
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
     - name: Restart containerd
       ansible.builtin.service:
         name: containerd
         state: restarted
         enabled: true
+
+    - name: Restart kubelet after NVIDIA runtime changes
+      ansible.builtin.service:
+        name: kubelet
+        state: restarted
+        enabled: true
+
+    - name: Check NVIDIA driver usability before final validation
+      ansible.builtin.command:
+        argv:
+          - nvidia-smi
+          - -L
+      register: nvidia_smi_precheck
+      changed_when: false
+      failed_when: false
+
+    - name: Reboot GPU host when NVIDIA userspace and kernel modules are out of sync
+      ansible.builtin.reboot:
+        msg: "Reboot triggered by gpu-prep after NVIDIA driver update"
+        reboot_timeout: 1800
+      when:
+        - nvidia_smi_precheck.rc != 0
+        - "'Failed to initialize NVML' in (nvidia_smi_precheck.stderr | default('')) or 'Driver/library version mismatch' in (nvidia_smi_precheck.stderr | default(''))"
+
+    - name: Validate NVIDIA driver usability after preparation
+      ansible.builtin.command:
+        argv:
+          - nvidia-smi
+          - -L
+      register: nvidia_smi_final
+      changed_when: false
+
+    - name: Assert NVIDIA GPUs are visible on the host
+      ansible.builtin.assert:
+        that:
+          - nvidia_smi_final.rc == 0
+          - "'GPU ' in nvidia_smi_final.stdout"
+        fail_msg: "GPU preparation completed but nvidia-smi does not report visible GPUs."

@@ -10,7 +10,7 @@ spec:
     minReplicas: 1
     serviceAccountName: llm-model-sa
     nodeSelector:
-      kubernetes.io/hostname: gpu-1
+      kubernetes.io/hostname: sxmgpu
     tolerations:
       - key: nvidia.com/gpu
         operator: Equal

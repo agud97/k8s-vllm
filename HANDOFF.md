@@ -18,15 +18,19 @@ Use these files first:
 
 - `3` control-plane nodes
 - `1` infra node
-- `2` GPU worker nodes with `NVIDIA A5000`
+- current live topology: `1` GPU worker node named `sxmgpu` with `8x NVIDIA H200`
+- original plan topology: `2` GPU worker nodes; this is now an approved live deviation recorded in [`spec/status.md`](/root/codex/k8s-cloud/spec/status.md)
 - `Kubernetes + Cilium + Istio + ArgoCD + Sealed Secrets + OpenEBS + KServe + vLLM + LiteLLM + Open WebUI + VictoriaMetrics`
 
 Phase-1 serving layout:
 
-- `gpu-1` -> `openai/gpt-oss-20b`
-- `gpu-2` -> `Qwen/Qwen3.5-9B`
+- current repo target -> both phase-1 models pinned to `sxmgpu`
 - public inference entrypoint -> `LiteLLM`
 - public UI -> `Open WebUI`
+
+Primary operational recovery doc for this topology change:
+
+- [`docs/runbooks/gpu-node-replacement.md`](/root/codex/k8s-cloud/docs/runbooks/gpu-node-replacement.md)
 
 ## Required Local Files
 
@@ -38,7 +42,7 @@ These files must exist and are intentionally not committed:
 
 What they contain:
 
-- `local/hosts.yml`: host IPs, SSH access, inventory grouping
+- `local/hosts.yml`: host IPs, SSH access, inventory grouping, and control-plane `access_ip` values when workers join over public IPs
 - `local/s3.env`: bucket, endpoint, credentials, prefix
 - `local/llm.env`: `LiteLLM` master key and `Open WebUI` admin bootstrap credentials
 
@@ -99,6 +103,9 @@ Alternative alias available through `LiteLLM`:
 ## Known Operational Notes
 
 - `llm` namespace creation must remain ordered before `LiteLLM` and `Open WebUI` application sync. This is enforced through `ArgoCD` sync waves and `CreateNamespace=true`.
+- if a worker can reach the control plane only through public IPs, `local/hosts.yml` must set `access_ip` for `cp-1`, `cp-2`, and `cp-3`; otherwise Kubespray renders worker-side `nginx-proxy` upstreams to unreachable private IPs
+- replacement GPU nodes may join successfully but remain broken until `cilium-operator` is running on live nodes and the `CiliumNode` object has a populated `spec.ipam.podCIDRs`
+- after NVIDIA toolkit configuration, `containerd` must expose `default_runtime_name = "nvidia"` for GPU-device-plugin pods to see NVML correctly
 - `bootstrap/app-secrets.sh` is required for reproducible creation of:
   - `llm-s3-credentials`
   - `litellm-auth`
@@ -124,6 +131,6 @@ If needed, recreate runtime secrets:
 
 ## Current Repository Baseline
 
-- dual-model serving layout is reflected in implementation and specs
+- dual-model serving layout is reflected in implementation, but the current live cluster uses one replacement GPU node `sxmgpu`
 - current `main` branch is the deployment source for `ArgoCD`
 - use [`Release.md`](/root/codex/k8s-cloud/Release.md) for the platform change history

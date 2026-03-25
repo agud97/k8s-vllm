@@ -24,6 +24,7 @@ Relevant specs:
 - The repository MUST store rendered or source manifests in a way that ArgoCD can reconcile directly from Git.
 - The repository MUST include a dedicated documentation file for bootstrap, validation, and recovery steps relevant to the lab scope.
 - The documentation MUST capture the commands and environment-specific outputs needed to prove that the live deployment was executed successfully.
+- The documentation MUST include a reusable runbook for replacing or onboarding GPU worker nodes after the initial cluster bootstrap.
 
 ### SHOULD
 
@@ -49,6 +50,7 @@ Relevant specs:
 
 - Bootstrap automation MUST be designed as idempotent orchestration steps with explicit inputs, observable outputs, and non-zero exit codes on failure.
 - The agent MUST execute the bootstrap automation against the provided hosts once prerequisites are available, unless blocked by a real infrastructure or credential failure.
+- Inventory and bootstrap logic MUST support worker onboarding in environments where control-plane private IPs are not reachable from replacement workers, using explicit inventory access addresses when required.
 - Each major platform capability MUST have a clearly defined ownership boundary:
   - cluster bootstrap
   - ArgoCD bootstrap
@@ -68,6 +70,7 @@ Relevant specs:
 - Platform components MUST be deployable independently enough to support failure isolation and targeted reconciliation.
 - Validation logic MUST be encapsulated in dedicated scripts or targets rather than buried in README prose only.
 - Component delivery is not complete until the corresponding live component is installed and validated in the target cluster.
+- Recovery logic for GPU node replacement MUST account for Cilium operator placement, worker-side API reachability, and NVIDIA runtime configuration rather than assuming a pristine first-bootstrap path.
 
 ### SHOULD
 
@@ -109,7 +112,9 @@ Relevant specs:
 - Platform versions MUST be pinned explicitly in manifests, values, image tags, or dependency lockfiles.
 - The deployment stack MUST expose the initial public inference path through `NodePort` on `infra-1` over HTTP by IP.
 - GPU enablement MUST include NVIDIA driver installation, NVIDIA container runtime support, and Kubernetes GPU resource discovery sufficient for `nvidia.com/gpu` scheduling.
+- GPU enablement MUST validate the host with `nvidia-smi` after installation and MUST treat driver or library mismatches as a host-level issue requiring remediation before Kubernetes GPU discovery is considered complete.
 - GPU resource discovery MUST use the NVIDIA Device Plugin. NVIDIA GPU Operator MUST NOT be used in the active lab deployment path.
+- Container runtime configuration for GPU nodes MUST ensure that containerd exposes an NVIDIA runtime that is actually usable by Kubernetes GPU workloads and device-plugin pods.
 - Conditionally required dependencies of the selected KServe, Knative, or Istio versions, including `cert-manager`, MUST be included only when the chosen implementation actually requires them.
 - The repository MUST declare a pinned dependency matrix covering the selected versions of core platform components and any conditionally enabled dependencies.
 - Acceptance-level performance validation MUST use these lab thresholds:
@@ -125,6 +130,7 @@ Relevant specs:
 - The implementation SHOULD prefer upstream-maintained charts and manifests over custom forks.
 - Model download or synchronization SHOULD occur through an explicit job or script that can be rerun safely.
 - The implementation SHOULD use Kubernetes labels, taints, and tolerations to separate infra and GPU workloads by node role.
+- The implementation SHOULD preserve enough inventory flexibility to accommodate GPU node replacement or temporary topology reduction without breaking validation scripts.
 
 ### MUST NOT
 
@@ -194,6 +200,7 @@ Relevant specs:
 - Final validation MUST be performed against the live target cluster, not only through static repository checks.
 - Post-deployment validation MUST be actually executed before completion is claimed.
 - The implementation MUST produce or preserve a usable kubeconfig or equivalent cluster access path for post-deployment validation.
+- Post-bootstrap documentation MUST describe an alternate SSH- or tunnel-based cluster access path when the generated kubeconfig is localhost-scoped and not directly usable from the operator machine.
 
 ### SHOULD
 

@@ -17,11 +17,16 @@ import sys, yaml
 with open("local/hosts.yml", "r", encoding="utf-8") as f:
     data = yaml.safe_load(f)
 hosts = data.get("all", {}).get("hosts", {})
-required = ["cp-1", "cp-2", "cp-3", "infra-1", "gpu-1", "gpu-2"]
+required = ["cp-1", "cp-2", "cp-3", "infra-1"]
 missing = [name for name in required if name not in hosts]
 if missing:
     print("missing required hosts: " + ", ".join(missing), file=sys.stderr)
     sys.exit(1)
+gpu_hosts = list(data.get("all", {}).get("children", {}).get("gpu", {}).get("hosts", {}).keys())
+if not gpu_hosts:
+    print("missing required gpu hosts group entries", file=sys.stderr)
+    sys.exit(1)
+required.extend(gpu_hosts)
 for name in required:
     if not hosts[name].get("ansible_host"):
       print(f"host {name} is missing ansible_host", file=sys.stderr)
@@ -32,10 +37,19 @@ PY
 
 check_cluster() {
   need_cmd kubectl
+  need_cmd python3
+  local expected_nodes
+  expected_nodes="$(python3 - <<'PY'
+import yaml
+with open("local/hosts.yml", "r", encoding="utf-8") as f:
+    data = yaml.safe_load(f)
+print(len(data.get("all", {}).get("hosts", {})))
+PY
+)"
   kubectl get nodes --no-headers >/tmp/k8s_nodes.txt
   local node_count
   node_count="$(wc -l </tmp/k8s_nodes.txt | tr -d ' ')"
-  [[ "$node_count" = "6" ]] || { printf 'expected 6 nodes, got %s\n' "$node_count" >&2; exit 1; }
+  [[ "$node_count" = "$expected_nodes" ]] || { printf 'expected %s nodes, got %s\n' "$expected_nodes" "$node_count" >&2; exit 1; }
   awk '$2 != "Ready" { print "node not ready: "$1" status="$2 > "/dev/stderr"; exit 1 }' /tmp/k8s_nodes.txt
   printf 'cluster node readiness validation passed\n'
 }
@@ -49,12 +63,22 @@ check_cilium() {
 
 check_gpu() {
   need_cmd kubectl
+  need_cmd python3
+  local expected_gpu_nodes
+  expected_gpu_nodes="$(python3 - <<'PY'
+import yaml
+with open("local/hosts.yml", "r", encoding="utf-8") as f:
+    data = yaml.safe_load(f)
+print(len(data.get("all", {}).get("children", {}).get("gpu", {}).get("hosts", {})))
+PY
+)"
   local gpu_nodes
   gpu_nodes="$(kubectl get nodes -l node-role.kubernetes.io/gpu= -o name | wc -l | tr -d ' ')"
-  [[ "$gpu_nodes" = "2" ]] || { printf 'expected 2 gpu nodes, got %s\n' "$gpu_nodes" >&2; exit 1; }
+  [[ "$gpu_nodes" = "$expected_gpu_nodes" ]] || { printf 'expected %s gpu nodes, got %s\n' "$expected_gpu_nodes" "$gpu_nodes" >&2; exit 1; }
   kubectl get nodes -o json >/tmp/k8s_nodes.json
-  python3 - <<'PY'
+  EXPECTED_GPU_NODES="$expected_gpu_nodes" python3 - <<'PY'
 import json, sys
+import os
 with open("/tmp/k8s_nodes.json", "r", encoding="utf-8") as f:
     data = json.load(f)
 gpu_nodes = []
@@ -66,8 +90,9 @@ for item in data["items"]:
             print(f"gpu capacity missing on {item['metadata']['name']}", file=sys.stderr)
             sys.exit(1)
         gpu_nodes.append(item["metadata"]["name"])
-if len(gpu_nodes) != 2:
-    print(f"expected 2 gpu nodes with nvidia.com/gpu, got {len(gpu_nodes)}", file=sys.stderr)
+expected = int(os.environ["EXPECTED_GPU_NODES"])
+if len(gpu_nodes) != expected:
+    print(f"expected {expected} gpu nodes with nvidia.com/gpu, got {len(gpu_nodes)}", file=sys.stderr)
     sys.exit(1)
 print("gpu validation passed")
 PY

@@ -8,7 +8,10 @@ Bring up the platform from new servers to the first successful smoke test.
 
 You already have:
 
-- `6` Ubuntu 24.04 servers
+- Ubuntu 24.04 servers for:
+  - `3` control-plane nodes
+  - `1` infra node
+  - `1` or more GPU worker nodes
 - public IPs for all nodes
 - SSH access to all nodes
 - `S3` bucket and credentials
@@ -18,8 +21,11 @@ Target roles:
 
 - `cp-1`, `cp-2`, `cp-3`
 - `infra-1`
-- `gpu-1`
-- `gpu-2`
+- GPU workers grouped under `gpu` in [`local/hosts.yml`](/root/codex/k8s-cloud/local/hosts.yml)
+
+Important inventory note:
+
+- if worker nodes can reach the control plane only through public IPs, set `access_ip` for `cp-1`, `cp-2`, and `cp-3` to those public IPs in [`local/hosts.yml`](/root/codex/k8s-cloud/local/hosts.yml)
 
 ## 1. Fill Local Files
 
@@ -74,7 +80,12 @@ Expected result:
 Expected result:
 
 - cluster comes up
-- `local/runtime/admin.conf` is usable
+- `local/runtime/admin.conf` exists
+
+Operational note:
+
+- `local/runtime/admin.conf` may still point to `127.0.0.1:6443`
+- if that happens, use SSH to `cp-1` or create a local tunnel instead of assuming the file is directly usable from the operator machine
 
 Verify:
 
@@ -86,8 +97,8 @@ You should see:
 
 - `3` control-plane nodes
 - `1` infra node
-- `2` GPU nodes
-- all nodes `Ready`
+- the GPU nodes currently declared in [`local/hosts.yml`](/root/codex/k8s-cloud/local/hosts.yml)
+- all live nodes `Ready`
 
 ## 6. Prepare GPU Nodes
 
@@ -105,7 +116,14 @@ kubectl --kubeconfig local/runtime/admin.conf describe node gpu-2 | grep -A3 Cap
 
 Expected result:
 
-- `nvidia.com/gpu` is visible on both GPU nodes
+- `nvidia.com/gpu` is visible on every host in the `gpu` group
+
+Critical validation:
+
+```bash
+kubectl --kubeconfig local/runtime/admin.conf get node -l node-role.kubernetes.io/gpu= \
+  -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.status.allocatable.nvidia\.com/gpu}{"\n"}{end}'
+```
 
 ## 7. Bootstrap ArgoCD
 
@@ -192,8 +210,11 @@ Expected target state:
 - `app-llm-serving` -> `Synced/Healthy` or temporarily `Progressing` during model load
 - `litellm` pod -> `Running`
 - `openwebui` pod -> `Running`
-- `gpt-oss-20b` predictor on `gpu-1`
-- `qwen35-9b` predictor on `gpu-2`
+- predictors scheduled only on currently active GPU nodes
+
+If GPU nodes were replaced after initial bootstrap:
+
+- verify the live `InferenceService` or predictor pod `nodeSelector` values no longer reference retired hostnames
 
 ## 12. Validate Cluster And Platform
 
@@ -251,6 +272,21 @@ Expected result:
 - Open WebUI uses internal `LiteLLM`
 
 ## Failure Checklist
+
+## GPU Node Replacement
+
+For future replacement or onboarding of GPU nodes, use:
+
+- [`docs/runbooks/gpu-node-replacement.md`](/root/codex/k8s-cloud/docs/runbooks/gpu-node-replacement.md)
+
+That runbook captures the live `sxmgpu` onboarding, including:
+
+- public-IP-only worker join
+- worker `nginx-proxy` fixes
+- `cilium-operator` relocation
+- `CiliumNode` IPAM recovery
+- NVIDIA runtime fixes for `containerd`
+- safe deletion of dead GPU node objects
 
 If `llm` apps disappear:
 

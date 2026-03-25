@@ -1,7 +1,7 @@
 ---
 - name: Prepare Ubuntu hosts for Kubespray bootstrap
   hosts: all
-  become: false
+  become: true
   gather_facts: true
   vars:
     required_packages:

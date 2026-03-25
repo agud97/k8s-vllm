@@ -164,6 +164,20 @@ Important constraint: the source text mixes stakeholder requirements with archit
    - the final ArgoCD port-forward command
    - the final smoke-test command against the live cluster
 
+46. Approved live deviation as of `2026-03-25`:
+   - the original `gpu-1` and `gpu-2` nodes were removed from service
+   - the live cluster now uses one replacement GPU node `sxmgpu`
+   - `sxmgpu` has `8x NVIDIA H200`
+   - phase-1 model workloads may be co-located on the replacement GPU node until a second active GPU worker exists again
+
+47. Future GPU node additions or replacements must be documented in a reusable operator runbook that includes:
+   - host and inventory preparation
+   - join workflow
+   - public-IP-only control-plane access handling
+   - Cilium recovery
+   - NVIDIA runtime recovery
+   - safe removal of dead node objects from Kubernetes
+
 ## Implementation Risks
 
 1. Cloud provider and region are still unspecified.
@@ -180,6 +194,12 @@ Why this is a risk: the authentication mechanism has been selected, but a miscon
 
 5. Live deployment may surface host- or provider-specific issues not visible in static repository validation.
 Why this is a risk: firewall policy, package mirrors, GPU driver compatibility, and provider networking may require in-place remediation during execution.
+
+6. Replacement workers may reach control-plane public IPs but not private control-plane IPs.
+Why this is a risk: kubeadm discovery, worker `nginx-proxy`, and generated Kubespray access paths may silently point at unreachable private addresses.
+
+7. Cilium operator placement may become stranded on removed GPU nodes during node replacement.
+Why this is a risk: new workers may fail to receive Cilium IPAM state even if the node object itself already has a PodCIDR.
 
 ## Missing Information
 
@@ -230,6 +250,10 @@ No unresolved missing information remains. The remaining implementation risks ar
 21. The current cloud environment permits external access to a `NodePort`-based ingress path on `infra-1`.
 
 22. `openai/gpt-oss-20b` and `Qwen/Qwen3.5-9B` are assumed to be the target artifacts for vLLM-based deployment.
+
+23. Some worker joins may require hostname-based API discovery through public `access_ip` values instead of direct use of control-plane private IPs.
+
+24. NVIDIA driver installation on replacement GPU workers may require a reboot before Kubernetes GPU discovery can succeed.
 
 ## Edge Cases
 

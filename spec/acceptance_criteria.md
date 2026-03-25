@@ -20,6 +20,8 @@
 
 8. WHEN a previous bootstrap attempt failed partway through, THEN the bootstrap workflow is executed again on the same environment, SHALL resume or reconcile safely without requiring destructive cleanup as a prerequisite.
 
+8a. WHEN a GPU worker is replaced after the initial bootstrap, THEN the documented node-replacement workflow is executed, SHALL add the replacement worker to the live cluster without requiring destruction of the control plane or a full cluster rebuild.
+
 ## GitOps And Repository Behavior
 
 9. WHEN the repository is inspected before deployment, THEN the operator reviews the repository contents, SHALL find deployment automation, GitOps manifests, pinned component versions, and operator-facing instructions in the same repository.
@@ -86,6 +88,8 @@
 
 31a. WHEN the GPU discovery components are inspected in the lab environment, THEN the platform configuration is reviewed, SHALL use the NVIDIA Device Plugin and SHALL not depend on NVIDIA GPU Operator.
 
+31b. WHEN a replacement GPU worker is onboarded in an environment where control-plane private IPs are not reachable from that worker, THEN the bootstrap and recovery workflow is executed, SHALL provide a documented and working API access path for the replacement worker and SHALL still result in discoverable `nvidia.com/gpu` capacity.
+
 32. WHEN the cluster is asked to serve inference after the model is reported ready, THEN a smoke-test request is sent through LiteLLM, SHALL return `HTTP 200`, a non-empty generated text field, and no infrastructure or runtime error in the response.
 
 33. WHEN the smoke-test request uses a short neutral prompt such as "Напиши одно короткое предложение о Kubernetes.", THEN the request is processed by the deployed model, SHALL return non-empty model-generated text rather than an infrastructure error.
@@ -143,6 +147,8 @@
 56. WHEN the final repository is delivered, THEN the documentation is reviewed, SHALL describe an execution path that is as close as possible to one command for bootstrap after manual VM creation.
 
 57. WHEN the final documentation is reviewed, THEN it SHALL include verification commands for cluster health, ArgoCD status, and inference validation.
+
+57a. WHEN the final documentation is reviewed for recovery coverage, THEN it SHALL include a GPU node replacement runbook covering worker join, Cilium recovery, NVIDIA runtime recovery, and stale-node removal.
 
 58. WHEN the final documentation is reviewed, THEN it SHALL include a sample LiteLLM smoke-test request and a sample successful response.
 

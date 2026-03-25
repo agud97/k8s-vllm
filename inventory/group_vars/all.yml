@@ -1,6 +1,3 @@
----
-ansible_user: root
-
 kube_network_plugin: cilium
 container_manager: containerd
 
@@ -19,7 +16,7 @@ node_role_labels:
     node-role.kubernetes.io/infra: ""
   gpu:
     node-role.kubernetes.io/gpu: ""
-    accelerator: nvidia-a5000
+    accelerator: nvidia-h200
 
 node_role_taints:
   kube_control_plane:
