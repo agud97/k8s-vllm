@@ -6,4 +6,5 @@ resources:
   - vmservicescrape-argocd.yaml
   - vmservicescrape-dcgm-exporter.yaml
   - vmservicescrape-kserve-controller.yaml
+  - vmservicescrape-litellm.yaml
   - vmservicescrape-llmisvc-controller.yaml

@@ -16,3 +16,6 @@ data:
           model: openai/qwen35-9b
           api_base: http://qwen35-9b-predictor.llm.svc/v1
           api_key: dummy
+    litellm_settings:
+      callbacks:
+        - prometheus

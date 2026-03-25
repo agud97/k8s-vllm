@@ -21,6 +21,8 @@ check_static() {
   grep -q 'releaseName: vmstack' gitops/root/app-platform-victoriametrics.yaml || { printf 'victoriametrics release name not shortened\n' >&2; exit 1; }
   grep -q 'kind: VMServiceScrape' gitops/platform/victoriametrics/vmservicescrape-argocd.yaml || { printf 'argocd scrape missing\n' >&2; exit 1; }
   grep -q 'kind: VMServiceScrape' gitops/platform/victoriametrics/vmservicescrape-kserve-controller.yaml || { printf 'kserve scrape missing\n' >&2; exit 1; }
+  grep -q 'kind: VMServiceScrape' gitops/platform/victoriametrics/vmservicescrape-litellm.yaml || { printf 'litellm scrape missing\n' >&2; exit 1; }
+  grep -q 'prometheus' gitops/apps/litellm/configmap.yaml || { printf 'litellm prometheus callback missing\n' >&2; exit 1; }
   grep -q 'chart: dcgm-exporter' gitops/root/app-infra-dcgm-exporter.yaml || { printf 'dcgm exporter chart missing\n' >&2; exit 1; }
   printf 'observability static validation passed\n'
 }

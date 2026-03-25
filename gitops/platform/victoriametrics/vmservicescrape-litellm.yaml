@@ -1,0 +1,18 @@
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  name: litellm-metrics
+  namespace: monitoring
+spec:
+  namespaceSelector:
+    matchNames:
+      - llm
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: litellm
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+  jobLabel: app.kubernetes.io/name
