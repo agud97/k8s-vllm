@@ -127,6 +127,10 @@ Alternative alias available through `LiteLLM`:
   - `minimax-m25` via `32091`
   - `qwen-coder` via `32092`
   - alias `default` maps to `qwen-122b`
+- if `Open WebUI` only shows `qwen-122b`, first check `LiteLLM /v1/models`:
+  - live `ConfigMap/litellm-config` may already contain all three models while the
+    `LiteLLM` pod is still running an older deployment revision
+  - a `rollout restart deployment/litellm -n llm` restores the full model list immediately
 - `LiteLLM` observability has one specific gotcha that already happened live:
   - `LiteLLM` metrics are exposed at `/metrics/`, not `/metrics`
   - `VMServiceScrape/litellm-metrics` must therefore use `path: /metrics/`
