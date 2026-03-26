@@ -174,6 +174,12 @@ If needed, recreate runtime secrets:
   - `--gpu-memory-utilization=0.85`
   - `--max-num-seqs=16`
   - `--enforce-eager`
+- `qwen35-122b` now runs from a persistent `OpenEBS LocalPV` cache instead of
+  `storage-initializer` + pod-local `EmptyDir`
+- `qwen3-coder` is being migrated to the same `OpenEBS LocalPV` cache pattern via
+  `qwen3-coder-model-cache`
+- the live `qwen3-coder` failure being mitigated during that migration is a
+  `vLLM` startup crash after model load with `custom_all_reduce.cuh:455 invalid argument`
 - the public `LiteLLM` path is also confirmed working:
   - correct public entrypoint is `http://89.111.168.161:32080`
   - `POST /v1/chat/completions` through `LiteLLM` returned `HTTP 200`
