@@ -38,4 +38,5 @@ spec:
         - --enable-chunked-prefill
         - --enable-prefix-caching
         - --reasoning-parser=qwen3
+        - --language-model-only
         - --dtype=auto

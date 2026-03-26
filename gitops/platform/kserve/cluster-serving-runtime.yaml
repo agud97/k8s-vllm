@@ -10,7 +10,7 @@ spec:
   hostIPC: true
   containers:
     - name: kserve-container
-      image: vllm/vllm-openai:v0.17.1
+      image: vllm/vllm-openai:latest
       args:
         - --model=/mnt/models
         - --host=0.0.0.0
