@@ -156,3 +156,20 @@ If needed, recreate runtime secrets:
 - three-model serving layout is reflected in implementation, with `2+4+2` GPU allocation on the replacement GPU node `sxmgpu`
 - current `main` branch is the deployment source for `ArgoCD`
 - use [`Release.md`](Release.md) for the platform change history
+
+## Current Live Serving Status
+
+- `qwen35-122b` is now `READY=True` in the live cluster
+- predictor pod `qwen35-122b-predictor-6c9df5b447-2pt49` is `1/1 Running` on `sxmgpu`
+- the direct model endpoint is confirmed working:
+  - `GET /v1/models` returns model id `qwen-122b`
+  - direct `POST /v1/chat/completions` against the predictor returns a valid JSON response
+- the successful live startup path used the conservative runtime profile now committed in [`gitops/apps/llm-serving/inference-service-qwen35-122b.yaml`](gitops/apps/llm-serving/inference-service-qwen35-122b.yaml):
+  - `--max-model-len=16384`
+  - `--gpu-memory-utilization=0.85`
+  - `--max-num-seqs=16`
+  - `--enforce-eager`
+- the public `LiteLLM` path is also confirmed working:
+  - correct public entrypoint is `http://89.111.168.161:32080`
+  - `POST /v1/chat/completions` through `LiteLLM` returned `HTTP 200`
+  - `LiteLLM` routed `qwen-122b` to `http://89.108.125.7:32090/v1`
