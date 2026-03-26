@@ -4,6 +4,7 @@ namespace: llm
 resources:
   - namespace.yaml
   - serviceaccount.yaml
+  - model-cache-pvc.yaml
   - inference-service-qwen35-122b.yaml
   - service-qwen35-122b-public.yaml
   - inference-service-minimax-m25.yaml

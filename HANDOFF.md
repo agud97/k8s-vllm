@@ -134,6 +134,11 @@ Alternative alias available through `LiteLLM`:
   - the GitOps fixes were shipped in:
     - `86c65e1` `Fix LiteLLM metrics scrape path`
     - `860e67a` `Label LiteLLM service for scraping`
+- model artifacts currently originate from S3, but the active migration path is to keep `S3` as source-of-truth and move runtime pods onto per-model `OpenEBS LocalPV` caches on `sxmgpu`; this avoids full re-downloads on every predictor rollout once the initial cache is populated
+- the already-downloaded pod-local model data on `sxmgpu` can be reused for that migration from:
+  - `/var/lib/kubelet/pods/66f05e8e-ce6b-405e-8490-e17ddb5a8a69/volumes/kubernetes.io~empty-dir/kserve-provision-location` for `qwen35-122b`
+  - `/var/lib/kubelet/pods/1844558b-1da2-4225-aaec-e96f1ec21a86/volumes/kubernetes.io~empty-dir/kserve-provision-location` for `minimax-m25`
+  - `/var/lib/kubelet/pods/c9fc43c8-893b-4419-97ce-57d343bec7d5/volumes/kubernetes.io~empty-dir/kserve-provision-location` for `qwen3-coder`
 
 ## Fast Recovery Checks
 

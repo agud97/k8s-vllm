@@ -9,6 +9,10 @@ spec:
   predictor:
     minReplicas: 1
     serviceAccountName: llm-model-sa
+    volumes:
+      - name: model-cache
+        persistentVolumeClaim:
+          claimName: qwen35-122b-model-cache
     nodeSelector:
       kubernetes.io/hostname: sxmgpu
     tolerations:
@@ -20,7 +24,9 @@ spec:
       modelFormat:
         name: huggingface
       runtime: vllm-openai-runtime
-      storageUri: s3://llm/models/phase-1/Qwen__Qwen3.5-122B-A10B-FP8
+      volumeMounts:
+        - name: model-cache
+          mountPath: /mnt/models
       resources:
         limits:
           nvidia.com/gpu: "2"

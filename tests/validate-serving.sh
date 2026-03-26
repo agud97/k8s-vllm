@@ -29,9 +29,13 @@ check_runtime_manifests() {
   grep -q 'Qwen/Qwen3-Coder-Next' docs/runbooks/model-artifacts.md || { printf 'Qwen3-Coder-Next source missing\n' >&2; exit 1; }
   grep -q 'hostIPC: true' gitops/platform/kserve/cluster-serving-runtime.yaml || { printf 'shared runtime hostIPC missing\n' >&2; exit 1; }
   grep -q 'sizeLimit: 32Gi' gitops/platform/kserve/cluster-serving-runtime.yaml || { printf 'shared runtime /dev/shm sizing missing\n' >&2; exit 1; }
+  grep -q 'qwen35-122b-model-cache' gitops/apps/llm-serving/model-cache-pvc.yaml || { printf 'Qwen 122B cache pvc missing\n' >&2; exit 1; }
+  grep -q 'minimax-m25-model-cache' gitops/apps/llm-serving/model-cache-pvc.yaml || { printf 'MiniMax cache pvc missing\n' >&2; exit 1; }
+  grep -q 'qwen3-coder-model-cache' gitops/apps/llm-serving/model-cache-pvc.yaml || { printf 'Qwen coder cache pvc missing\n' >&2; exit 1; }
   grep -q 'runtime: vllm-openai-runtime' gitops/apps/llm-serving/inference-service-qwen35-122b.yaml || { printf 'Qwen 122B InferenceService runtime missing\n' >&2; exit 1; }
   grep -q 'runtime: vllm-openai-runtime' gitops/apps/llm-serving/inference-service-minimax-m25.yaml || { printf 'MiniMax InferenceService runtime missing\n' >&2; exit 1; }
   grep -q 'runtime: vllm-openai-runtime' gitops/apps/llm-serving/inference-service-qwen3-coder.yaml || { printf 'Qwen coder InferenceService runtime missing\n' >&2; exit 1; }
+  grep -q 'mountPath: /mnt/models' gitops/apps/llm-serving/inference-service-qwen35-122b.yaml || { printf 'Qwen 122B local model mount missing\n' >&2; exit 1; }
   printf 'runtime manifest validation passed\n'
 }
 
