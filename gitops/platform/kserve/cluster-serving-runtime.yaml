@@ -37,6 +37,7 @@ spec:
           mountPath: /dev/shm
       ports:
         - containerPort: 8080
+          protocol: TCP
   nodeSelector:
     node-role.kubernetes.io/gpu: ""
   tolerations:
