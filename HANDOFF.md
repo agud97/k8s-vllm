@@ -193,6 +193,8 @@ If needed, recreate runtime secrets:
   - `qwen35-122b`
   - `qwen3-coder`
   - `minimax-m25`
+- the staged throughput tuning plan for `qwen35-122b` after the parallel stress-test failures is saved in
+  [`docs/runbooks/qwen35-122b-throughput-tuning.md`](docs/runbooks/qwen35-122b-throughput-tuning.md)
 - the public `LiteLLM` path is also confirmed working:
   - correct public entrypoint is `http://89.111.168.161:32080`
   - `POST /v1/chat/completions` through `LiteLLM` returned `HTTP 200`
