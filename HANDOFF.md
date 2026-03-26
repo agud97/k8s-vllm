@@ -184,8 +184,15 @@ If needed, recreate runtime secrets:
   `qwen3-coder-model-cache`
 - the live `qwen3-coder` failure that was mitigated during that migration was a
   `vLLM` startup crash after model load with `custom_all_reduce.cuh:455 invalid argument`
-- `minimax-m25` is the next model being migrated to `OpenEBS LocalPV` cache via
+- `minimax-m25` now also runs from `OpenEBS LocalPV` cache via
   `minimax-m25-model-cache`
+- `minimax-m25` needed a long post-load warmup after weights and KV cache were ready:
+  repeated `shm_broadcast` waits followed by `DeepGEMM warmup` eventually resolved
+  into a healthy API server; this is a known warmup path, not an automatic restart trigger
+- all three serving models are now confirmed `READY=True` from persistent local cache:
+  - `qwen35-122b`
+  - `qwen3-coder`
+  - `minimax-m25`
 - the public `LiteLLM` path is also confirmed working:
   - correct public entrypoint is `http://89.111.168.161:32080`
   - `POST /v1/chat/completions` through `LiteLLM` returned `HTTP 200`

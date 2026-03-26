@@ -214,6 +214,14 @@ Expected result:
   - `MiniMaxAI/MiniMax-M2.5`
   - `Qwen/Qwen3-Coder-Next`
 
+Important:
+
+- do not rely on KServe `storage-initializer` as the normal runtime path for these models
+- after `HF -> S3`, serve from the per-model `OpenEBS LocalPV` caches instead:
+  - `qwen35-122b-model-cache`
+  - `minimax-m25-model-cache`
+  - `qwen3-coder-model-cache`
+
 ## 11. Wait For GitOps Reconciliation
 
 Check:
@@ -237,6 +245,15 @@ Expected target state:
   - `qwen-122b`
   - `minimax-m25`
   - `qwen-coder`
+
+Serving-specific checks:
+
+- predictor pods should mount `/mnt/models` from their model-cache PVCs and should not depend on `storage-initializer`
+- if a new predictor pod stays `Pending`, check for `Insufficient nvidia.com/gpu` before debugging `vLLM`; on a single GPU worker the safe cutover is scale old predictor to `0`, wait for GPU release, then scale back to `1`
+- use the committed conservative `vLLM` profiles for first boot on `H200`; do not start from aggressive `gpu-memory-utilization` or very large `max-model-len`
+- if `qwen3-coder` fails after weight load with `custom_all_reduce.cuh:455 invalid argument`, switch back to the eager conservative profile
+- if `minimax-m25` has already loaded weights and KV cache, tolerate long `shm_broadcast` waits and `DeepGEMM warmup` before deciding it is stuck
+- if `LiteLLM` is `Healthy` but `/v1/models` is missing aliases, restart `deployment/litellm` and verify that the deployment template annotation `litellm-config-revision` changed
 
 If GPU nodes were replaced after initial bootstrap:
 
@@ -279,6 +296,20 @@ Expected result:
 Default smoke-test model:
 
 - `default`
+
+Also verify model discovery explicitly:
+
+```bash
+curl -H "Authorization: Bearer $LITELLM_API_KEY" \
+  "$LITELLM_BASE_URL/v1/models"
+```
+
+Expected aliases:
+
+- `default`
+- `qwen-122b`
+- `minimax-m25`
+- `qwen-coder`
 
 ## 14. Open Open WebUI
 

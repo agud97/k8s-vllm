@@ -107,6 +107,20 @@ kubectl --kubeconfig local/runtime/admin.conf get applications -n argocd
   - `Qwen/Qwen3.5-122B-A10B-FP8` exposed as `qwen-122b` and `default`
   - `MiniMaxAI/MiniMax-M2.5` exposed as `minimax-m25`
   - `Qwen/Qwen3-Coder-Next` exposed as `qwen-coder`
+- `S3` is the source of truth for model artifacts, but runtime serving must use the per-model `OpenEBS LocalPV` caches in [`gitops/apps/llm-serving/model-cache-pvc.yaml`](gitops/apps/llm-serving/model-cache-pvc.yaml). If predictors fall back to `storage-initializer`, every rollout will download the full model again.
+- Safe rollout pattern for these large models on a single GPU worker is:
+  - populate the target model-cache PVC first
+  - scale the old predictor deployment to `0`
+  - wait until the GPUs are released
+  - scale back to `1`
+  - otherwise a second predictor pod can stay `Pending` forever on `Insufficient nvidia.com/gpu`
+- Conservative runtime profiles are required on `H200` for stable startup:
+  - `qwen35-122b`: `max-model-len=16384`, `gpu-memory-utilization=0.85`, `max-num-seqs=16`, `enforce-eager`
+  - `qwen3-coder`: `max-model-len=32768`, `gpu-memory-utilization=0.85`, `max-num-seqs=16`, `enforce-eager`
+  - `minimax-m25`: `max-model-len=16384`, `gpu-memory-utilization=0.85`, `max-num-seqs=16`, `enforce-eager`
+- Two model-specific `vLLM` behaviors are now known and should not be rediscovered from scratch:
+  - `qwen3-coder` can fail after model load with `custom_all_reduce.cuh:455 invalid argument`; the eager conservative profile is the known mitigation
+  - `minimax-m25` can spend several minutes after weight load in `shm_broadcast` waits and `DeepGEMM warmup` before the API becomes ready; do not restart it prematurely if weights and KV cache are already loaded
 - Multi-GPU `vLLM` runtimes on the `8x H200` worker require `hostIPC: true`, a large `/dev/shm`, and successful `nvidia-fabricmanager` initialization before predictor pods can initialize CUDA reliably.
 - `dcgm-exporter` on public-only GPU workers must be scraped through the GitOps-managed public endpoint if the observability stack cannot reliably reach the GPU pod CIDR.
 
@@ -188,7 +202,8 @@ Example successful response shape:
 
 - URL: `http://<infra-1-public-ip>:32081`
 - Admin credentials are sourced from `local/llm.env` and bootstrapped via `./bootstrap/app-secrets.sh`
-- If models do not appear in the selector, inspect [`gitops/apps/litellm/configmap.yaml`](gitops/apps/litellm/configmap.yaml) first; Open WebUI only reflects the aliases currently exported by `LiteLLM`
+- If models do not appear in the selector, inspect [`gitops/apps/litellm/configmap.yaml`](gitops/apps/litellm/configmap.yaml) and `LiteLLM /v1/models`; Open WebUI only reflects the aliases currently exported by `LiteLLM`
+- If the `ConfigMap` is correct but `/v1/models` is stale, restart `deployment/litellm -n llm` or ensure the `litellm-config-revision` annotation changed in [`gitops/apps/litellm/deployment.yaml`](gitops/apps/litellm/deployment.yaml)
 - If model replies fail after a model switch, inspect the public fallback upstreams in [`gitops/apps/litellm/configmap.yaml`](gitops/apps/litellm/configmap.yaml) and the S3-backed `InferenceService` objects in [`gitops/apps/llm-serving`](gitops/apps/llm-serving)
 
 ## Grafana
