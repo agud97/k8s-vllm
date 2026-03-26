@@ -9,6 +9,10 @@ spec:
   predictor:
     minReplicas: 1
     serviceAccountName: llm-model-sa
+    volumes:
+      - name: model-cache
+        persistentVolumeClaim:
+          claimName: minimax-m25-model-cache
     nodeSelector:
       kubernetes.io/hostname: sxmgpu
     tolerations:
@@ -20,7 +24,9 @@ spec:
       modelFormat:
         name: huggingface
       runtime: vllm-openai-runtime
-      storageUri: s3://llm/models/phase-1/MiniMaxAI__MiniMax-M2.5
+      volumeMounts:
+        - name: model-cache
+          mountPath: /mnt/models
       resources:
         limits:
           nvidia.com/gpu: "4"
@@ -33,11 +39,10 @@ spec:
         - --served-model-name=minimax-m25
         - --trust-remote-code
         - --tensor-parallel-size=4
-        - --max-model-len=32768
-        - --gpu-memory-utilization=0.92
-        - --max-num-seqs=32
-        - --enable-chunked-prefill
-        - --enable-prefix-caching
+        - --max-model-len=16384
+        - --gpu-memory-utilization=0.85
+        - --max-num-seqs=16
+        - --enforce-eager
         - --enable-auto-tool-choice
         - --tool-call-parser=minimax_m2
         - --reasoning-parser=minimax_m2_append_think
