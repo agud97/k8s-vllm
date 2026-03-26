@@ -11,16 +11,6 @@ data:
           model: openai/qwen-122b
           api_base: http://89.108.125.7:32090/v1
           api_key: dummy
-      - model_name: minimax-m25
-        litellm_params:
-          model: openai/minimax-m25
-          api_base: http://89.108.125.7:32091/v1
-          api_key: dummy
-      - model_name: qwen-coder
-        litellm_params:
-          model: openai/qwen-coder
-          api_base: http://89.108.125.7:32092/v1
-          api_key: dummy
       - model_name: default
         litellm_params:
           model: openai/qwen-122b

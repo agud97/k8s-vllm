@@ -5,8 +5,4 @@ resources:
   - namespace.yaml
   - serviceaccount.yaml
   - inference-service-qwen35-122b.yaml
-  - inference-service-minimax-m25.yaml
-  - inference-service-qwen3-coder.yaml
   - service-qwen35-122b-public.yaml
-  - service-minimax-m25-public.yaml
-  - service-qwen3-coder-public.yaml

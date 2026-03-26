@@ -35,8 +35,6 @@ check_static() {
   grep -q 'grafana_dashboard: "1"' gitops/platform/victoriametrics/dashboard-llm-platform-overview.yaml || { printf 'llm platform dashboard label missing\n' >&2; exit 1; }
   grep -q 'prometheus' gitops/apps/litellm/configmap.yaml || { printf 'litellm prometheus callback missing\n' >&2; exit 1; }
   grep -q 'qwen-122b' gitops/apps/litellm/configmap.yaml || { printf 'primary LiteLLM model alias missing\n' >&2; exit 1; }
-  grep -q 'minimax-m25' gitops/apps/litellm/configmap.yaml || { printf 'MiniMax LiteLLM model alias missing\n' >&2; exit 1; }
-  grep -q 'qwen-coder' gitops/apps/litellm/configmap.yaml || { printf 'Qwen coder LiteLLM model alias missing\n' >&2; exit 1; }
   grep -q 'chart: dcgm-exporter' gitops/root/app-infra-dcgm-exporter.yaml || { printf 'dcgm exporter chart missing\n' >&2; exit 1; }
   printf 'observability static validation passed\n'
 }

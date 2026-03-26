@@ -18,11 +18,7 @@ check_s3_config() {
 
 check_litellm_manifests() {
   grep -q ':32090/v1' gitops/apps/litellm/configmap.yaml || { printf 'qwen-122b upstream api_base missing\n' >&2; exit 1; }
-  grep -q ':32091/v1' gitops/apps/litellm/configmap.yaml || { printf 'minimax-m25 upstream api_base missing\n' >&2; exit 1; }
-  grep -q ':32092/v1' gitops/apps/litellm/configmap.yaml || { printf 'qwen-coder upstream api_base missing\n' >&2; exit 1; }
   grep -q 'qwen-122b' gitops/apps/litellm/configmap.yaml || { printf 'qwen-122b alias missing\n' >&2; exit 1; }
-  grep -q 'minimax-m25' gitops/apps/litellm/configmap.yaml || { printf 'minimax-m25 alias missing\n' >&2; exit 1; }
-  grep -q 'qwen-coder' gitops/apps/litellm/configmap.yaml || { printf 'qwen-coder alias missing\n' >&2; exit 1; }
   grep -q 'model_name: default' gitops/apps/litellm/configmap.yaml || { printf 'default alias missing\n' >&2; exit 1; }
   printf 'litellm manifest validation passed\n'
 }
