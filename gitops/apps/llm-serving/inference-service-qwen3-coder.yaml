@@ -12,7 +12,7 @@ spec:
     volumes:
       - name: model-cache
         persistentVolumeClaim:
-          claimName: qwen3-coder-model-cache
+          claimName: qwen3-coder-fp8-model-cache
     nodeSelector:
       kubernetes.io/hostname: sxmgpu
     tolerations:
@@ -38,7 +38,7 @@ spec:
       args:
         - --served-model-name=qwen-coder
         - --tensor-parallel-size=2
-        - --dtype=bfloat16
+        - --dtype=auto
         - --max-model-len=32768
         - --gpu-memory-utilization=0.85
         - --max-num-seqs=16
