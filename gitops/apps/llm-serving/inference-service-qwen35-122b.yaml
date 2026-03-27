@@ -40,7 +40,7 @@ spec:
         - --chat-template-content-format=auto
         - --dtype=auto
         - --tensor-parallel-size=2
-        - --max-model-len=16384
+        - --max-model-len=262144
         - --max-num-seqs=24
         - --max-num-batched-tokens=16384
         - --reasoning-parser=qwen3
