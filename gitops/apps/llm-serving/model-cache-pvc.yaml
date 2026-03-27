@@ -36,3 +36,16 @@ spec:
     requests:
       storage: 200Gi
   storageClassName: openebs-hostpath
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: qwen3-coder-fp8-model-cache
+  namespace: llm
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Gi
+  storageClassName: openebs-hostpath

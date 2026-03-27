@@ -15,7 +15,7 @@ WORKDIR="${ROOT_DIR}/bootstrap/cache/model-sync"
 MODEL_REPOS=(
   "Qwen/Qwen3.5-122B-A10B-FP8"
   "MiniMaxAI/MiniMax-M2.5"
-  "Qwen/Qwen3-Coder-Next"
+  "Qwen/Qwen3-Coder-Next-FP8"
 )
 
 [[ -f "$S3_ENV_FILE" ]] || { printf 'missing required file: %s\n' "$S3_ENV_FILE" >&2; exit 1; }
