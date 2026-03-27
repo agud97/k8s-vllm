@@ -31,6 +31,9 @@ spec:
     litellm:
       version: "1.82.4"
       source: "https://pypi.org/project/litellm/1.82.4/"
+    postgres:
+      version: "16.9"
+      source: "https://hub.docker.com/_/postgres"
     victoriametrics:
       version: "v1.138.0"
       source: "https://github.com/VictoriaMetrics/VictoriaMetrics/releases/tag/v1.138.0"

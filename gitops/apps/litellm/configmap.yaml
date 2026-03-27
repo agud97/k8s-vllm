@@ -29,3 +29,4 @@ data:
     litellm_settings:
       callbacks:
         - prometheus
+      database_url: os.environ/DATABASE_URL

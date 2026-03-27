@@ -61,6 +61,7 @@ EOF
   2. ./bootstrap/sealed-secrets-bootstrap.sh
   3. ./bootstrap/app-secrets.sh
   4. ./bootstrap/model-sync.sh
+  5. ./bootstrap/litellm-ui-user.sh
 [status] deploy entrypoint prerequisites satisfied
 EOF
     ;;

@@ -20,6 +20,10 @@ check_litellm_manifests() {
   grep -q ':32090/v1' gitops/apps/litellm/configmap.yaml || { printf 'qwen-122b upstream api_base missing\n' >&2; exit 1; }
   grep -q 'qwen-122b' gitops/apps/litellm/configmap.yaml || { printf 'qwen-122b alias missing\n' >&2; exit 1; }
   grep -q 'model_name: default' gitops/apps/litellm/configmap.yaml || { printf 'default alias missing\n' >&2; exit 1; }
+  grep -q 'database_url: os.environ/DATABASE_URL' gitops/apps/litellm/configmap.yaml || { printf 'litellm database_url missing\n' >&2; exit 1; }
+  grep -q 'name: DATABASE_URL' gitops/apps/litellm/deployment.yaml || { printf 'litellm DATABASE_URL env missing\n' >&2; exit 1; }
+  grep -q 'litellm-postgres-auth' gitops/apps/litellm/deployment.yaml || { printf 'litellm postgres secret reference missing\n' >&2; exit 1; }
+  grep -q 'postgres:16.9-bookworm' gitops/apps/litellm/postgres-statefulset.yaml || { printf 'litellm postgres image pin missing\n' >&2; exit 1; }
   printf 'litellm manifest validation passed\n'
 }
 

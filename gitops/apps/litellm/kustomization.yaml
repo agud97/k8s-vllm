@@ -4,4 +4,6 @@ namespace: llm
 resources:
   - configmap.yaml
   - deployment.yaml
+  - postgres-service.yaml
+  - postgres-statefulset.yaml
   - service.yaml

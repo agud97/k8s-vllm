@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: litellm-postgres
+  namespace: llm
+  labels:
+    app.kubernetes.io/name: litellm-postgres
+spec:
+  selector:
+    app.kubernetes.io/name: litellm-postgres
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
