@@ -18,6 +18,8 @@ These commands require a bootstrapped cluster:
 - `./tests/validate-serving.sh runtime`
 - `./tests/validate-observability.sh runtime`
 - `make smoke-test`
+- `kubectl -n llm rollout status statefulset/litellm-postgres`
+- `kubectl -n llm rollout status deployment/litellm`
 
 ## Smoke Test Prerequisites
 
@@ -27,3 +29,12 @@ The smoke test requires:
 - `LITELLM_API_KEY=<valid-api-key>`
 
 Without a reachable endpoint, the expected failure mode is a connection error from `curl`.
+
+## LiteLLM UI Auth Prerequisites
+
+The `LiteLLM` admin UI requires:
+
+- `secret/litellm-postgres-auth -n llm`
+- `statefulset/litellm-postgres -n llm`
+- `deployment/litellm -n llm` on a DB-backed revision
+- a seeded internal user created by `./bootstrap/litellm-ui-user.sh`

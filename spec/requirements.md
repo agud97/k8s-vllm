@@ -97,6 +97,19 @@ Important constraint: the source text mixes stakeholder requirements with archit
 
 33. LiteLLM authentication must use LiteLLM native API keys, without an external auth proxy and without Istio AuthorizationPolicy as the primary auth mechanism.
 
+33a. LiteLLM admin UI access must support login by internal `user/password`, not only by `master key`.
+
+33b. LiteLLM admin UI stateful authentication may use an in-cluster `Postgres` backend if required by the selected LiteLLM version.
+
+33c. The local operator input contract must include the credentials required to bootstrap LiteLLM admin UI authentication:
+   - `LITELLM_POSTGRES_PASSWORD`
+   - `LITELLM_UI_ADMIN_NAME`
+   - `LITELLM_UI_ADMIN_EMAIL`
+   - `LITELLM_UI_ADMIN_PASSWORD`
+   - `LITELLM_UI_ADMIN_ROLE`
+
+33d. The deployment workflow must include an operator-facing step that creates or updates the internal LiteLLM admin user after the DB-backed LiteLLM deployment is healthy.
+
 34. Required VictoriaMetrics scrape targets and dashboard coverage must include:
    - kube-state-metrics
    - node-exporter
@@ -195,8 +208,8 @@ Why this is a risk: the phase-1 topology is fixed, but version compatibility can
 3. The selected model artifact and vLLM version may still have runtime-specific compatibility constraints.
 Why this is a risk: even with a pinned Hugging Face source, practical startup behavior can still depend on the exact vLLM and serving-stack versions.
 
-4. LiteLLM API key configuration and secret-delivery flow still need correct implementation.
-Why this is a risk: the authentication mechanism has been selected, but a misconfigured secret flow would still break public inference access.
+4. LiteLLM API key configuration, DB-backed UI auth, and secret-delivery flow still need correct implementation.
+Why this is a risk: the authentication mechanisms have been selected, but a misconfigured secret flow or DB bootstrap would still break public inference access or LiteLLM admin UI login.
 
 5. Live deployment may surface host- or provider-specific issues not visible in static repository validation.
 Why this is a risk: firewall policy, package mirrors, GPU driver compatibility, and provider networking may require in-place remediation during execution.
@@ -246,6 +259,8 @@ No unresolved missing information remains. The remaining implementation risks ar
 16. The inference endpoint will be exposed through `NodePort` on `infra-1`, without a custom domain.
 
 17. LiteLLM native authentication is acceptable as the token-based protection mechanism.
+
+17a. LiteLLM internal user/password authentication is acceptable for admin UI access when backed by an in-cluster database.
 
 18. Observability requirements are intentionally limited to metrics and dashboards.
 

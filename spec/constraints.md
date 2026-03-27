@@ -67,6 +67,7 @@ Relevant specs:
 - The public inference entrypoint MUST terminate at LiteLLM and MUST treat KServe or vLLM as internal upstream services.
 - LiteLLM MUST integrate with the serving layer through OpenAI-compatible upstream endpoints managed in GitOps.
 - The active LiteLLM upstream contract MUST expose `/v1/chat/completions`, use the pinned model aliases `qwen-122b`, `minimax-m25`, `qwen-coder`, plus `default`, and MUST permit the documented public-fallback endpoint topology when private east-west reachability to `sxmgpu` is not available.
+- LiteLLM admin UI authentication MUST remain GitOps-managed and reproducible, including any required backing database and the bootstrap flow for the seeded admin user.
 - Secret material consumed by workloads MUST enter the cluster through Sealed Secrets and standard Kubernetes Secrets derived from them.
 - The design MUST preserve an upgrade path to future multi-node inference without forcing a distributed serving implementation in phase 1.
 - Platform components MUST be deployable independently enough to support failure isolation and targeted reconciliation.
@@ -91,6 +92,7 @@ Relevant specs:
 - The design MUST NOT expose ArgoCD publicly as part of the intended steady state.
 - The design MUST NOT treat production-only concerns such as Vault as active dependencies for the current lab implementation.
 - The design MUST NOT hard-code mutable runtime state into static manifests when the value belongs in inventory, values files, or sealed secret inputs.
+- The design MUST NOT depend on the LiteLLM master key as the only supported operator login path for the admin UI.
 
 ## 3. Technology Decisions
 
@@ -107,16 +109,19 @@ Relevant specs:
 - Current model serving MUST use three single-replica, non-distributed `KServe InferenceService` workloads on the active `8x H200` GPU node, with a repository-declared GPU split across the three target models.
 - The model sources MUST be pinned to `Qwen/Qwen3.5-122B-A10B-FP8`, `MiniMaxAI/MiniMax-M2.5`, and `Qwen/Qwen3-Coder-Next`.
 - Public inference access MUST go through LiteLLM using LiteLLM native API key authentication.
+- LiteLLM admin UI stateful authentication MAY use an in-cluster Postgres backend when required by the selected LiteLLM version.
 - Observability MUST use VictoriaMetrics Kubernetes stack with 7-day retention and 100Gi persistent storage.
 - GPU observability MUST use an in-cluster exporter compatible with NVIDIA host drivers and the VictoriaMetrics scrape model; NVIDIA DCGM Exporter is the approved implementation path for the lab environment.
 - Persistent storage for in-cluster stateful workloads MUST use OpenEBS LocalPV where persistence is required in this lab environment.
 - Storage ownership MUST follow this lab matrix:
   - model artifacts in S3
+  - LiteLLM admin UI auth state in Postgres on OpenEBS LocalPV when DB-backed auth is enabled
   - VictoriaMetrics data on OpenEBS LocalPV
   - Sealed Secrets key reuse material preserved outside Git for rebuild reuse
   - ArgoCD state treated as ephemeral, with no PVC-backed ArgoCD features in current lab scope
   - temporary model cache treated as ephemeral unless explicitly configured otherwise
 - Platform versions MUST be pinned explicitly in manifests, values, image tags, or dependency lockfiles.
+- The database image used for LiteLLM admin UI authentication MUST be pinned explicitly in the repository when that path is enabled.
 - The deployment stack MUST expose the initial public inference path through `NodePort` on `infra-1` over HTTP by IP.
 - GPU enablement MUST include NVIDIA driver installation, NVIDIA container runtime support, and Kubernetes GPU resource discovery sufficient for `nvidia.com/gpu` scheduling.
 - GPU enablement MUST validate the host with `nvidia-smi` after installation and MUST treat driver or library mismatches as a host-level issue requiring remediation before Kubernetes GPU discovery is considered complete.
@@ -206,6 +211,7 @@ Relevant specs:
   - LiteLLM is reachable
   - VictoriaMetrics stack is healthy
 - Post-deployment validation MUST include a negative test for inference access without a valid API key.
+- Post-deployment validation MUST verify that LiteLLM admin UI auth no longer fails with `DB not connected` when the repository declares DB-backed LiteLLM UI login.
 - Post-deployment validation MUST include the documented smoke test prompt through LiteLLM and assert successful HTTP response plus non-empty text output.
 - Validation for pinned versions MUST assert that required platform images or chart references are not left floating.
 - Validation logic MUST be runnable from the repository with documented commands.

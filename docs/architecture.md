@@ -17,6 +17,7 @@ flowchart TB
       argocd[ArgoCD]
       istio[Istio IngressGateway]
       litellm[LiteLLM]
+      litellmdb[LiteLLM Postgres]
       openwebui[Open WebUI]
       sealed[Sealed Secrets]
       vm[VictoriaMetrics]
@@ -44,6 +45,7 @@ flowchart TB
   internet -->|NodePort 32080| istio
   istio --> litellm
   openwebui -->|OpenAI-compatible API| litellm
+  litellm -->|DATABASE_URL| litellmdb
   litellm -->|public fallback /v1| qwen122
   litellm -->|public fallback /v1| minimax
   litellm -->|public fallback /v1| coder
@@ -74,6 +76,7 @@ flowchart TB
 ## Request Paths
 
 - Public inference: `Internet -> NodePort 32080 -> Istio -> LiteLLM -> model-specific KServe/vLLM predictor`
+- LiteLLM admin UI auth: `Browser -> LiteLLM UI -> LiteLLM internal user store -> Postgres`
 - Public UI: `Internet -> NodePort 32081 -> Open WebUI -> LiteLLM -> predictor`
 - GitOps control: `ArgoCD -> GitHub repository -> platform/apps reconciliation`
 - Model supply: `Hugging Face -> S3 sync -> KServe storage initializer -> GPU nodes`
@@ -87,6 +90,7 @@ flowchart TB
 ## Serving Layout
 
 - `LiteLLM` is the only public inference entrypoint.
+- `LiteLLM` admin UI login is stateful and depends on the in-cluster `Postgres` backing store.
 - `Open WebUI` uses internal `LiteLLM`, not direct model backends.
 - Each model is exposed through one OpenAI-compatible vLLM endpoint and one GitOps-managed public fallback `NodePort` on `sxmgpu`.
 - Current serving is non-distributed but multi-GPU within a single node: `TP=2` for `qwen35-122b`, `TP=4` for `minimax-m25`, and `TP=2` for `qwen3-coder`.

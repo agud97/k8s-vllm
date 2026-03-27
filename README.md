@@ -93,7 +93,13 @@ make validate-static
 ./bootstrap/model-sync.sh
 ```
 
-10. Let ArgoCD reconcile platform and applications:
+10. Ensure LiteLLM UI credentials and DB-backed auth:
+
+```bash
+./bootstrap/litellm-ui-user.sh
+```
+
+11. Let ArgoCD reconcile platform and applications:
 
 ```bash
 kubectl --kubeconfig local/runtime/admin.conf get applications -n argocd
@@ -206,6 +212,28 @@ Example successful response shape:
 - If the `ConfigMap` is correct but `/v1/models` is stale, restart `deployment/litellm -n llm` or ensure the `litellm-config-revision` annotation changed in [`gitops/apps/litellm/deployment.yaml`](gitops/apps/litellm/deployment.yaml)
 - If model replies fail after a model switch, inspect the public fallback upstreams in [`gitops/apps/litellm/configmap.yaml`](gitops/apps/litellm/configmap.yaml) and the S3-backed `InferenceService` objects in [`gitops/apps/llm-serving`](gitops/apps/llm-serving)
 
+## LiteLLM Admin UI
+
+- URL: `http://<infra-1-public-ip>:32080/ui/`
+- UI auth is DB-backed and requires the internal `LiteLLM` user store on top of the in-cluster `Postgres`
+- The `Postgres` backend is deployed by GitOps from [`gitops/apps/litellm/postgres-statefulset.yaml`](gitops/apps/litellm/postgres-statefulset.yaml)
+- `LiteLLM` is connected through `DATABASE_URL` from the `litellm-postgres-auth` secret
+- The admin user is created or updated by [`bootstrap/litellm-ui-user.sh`](bootstrap/litellm-ui-user.sh)
+- Local operator variables for this flow live in [`local/llm.env`](local/llm.env):
+  - `LITELLM_POSTGRES_PASSWORD`
+  - `LITELLM_UI_ADMIN_NAME`
+  - `LITELLM_UI_ADMIN_EMAIL`
+  - `LITELLM_UI_ADMIN_PASSWORD`
+  - `LITELLM_UI_ADMIN_ROLE`
+- In the current live environment, the seeded admin login is:
+  - email: `admin@openwebui.local`
+  - password: value of `LITELLM_UI_ADMIN_PASSWORD` from `local/llm.env`
+- If `/ui/` returns `Authentication Error, Not connected to DB!`, verify:
+  - `statefulset/litellm-postgres -n llm` is `Ready`
+  - `deployment/litellm -n llm` has rolled out the DB-backed revision
+  - `secret/litellm-postgres-auth -n llm` exists
+  - `./bootstrap/litellm-ui-user.sh` completes successfully
+
 ## Grafana
 
 - URL: `http://<infra-1-public-ip>:32082`
@@ -218,6 +246,7 @@ Example successful response shape:
 - [`docs/runbooks/sealed-secrets.md`](docs/runbooks/sealed-secrets.md)
 - [`docs/runbooks/storage.md`](docs/runbooks/storage.md)
 - [`docs/runbooks/ingress.md`](docs/runbooks/ingress.md)
+- [`docs/runbooks/litellm-ui.md`](docs/runbooks/litellm-ui.md)
 - [`docs/runbooks/model-artifacts.md`](docs/runbooks/model-artifacts.md)
 - [`RUNBOOK.md`](RUNBOOK.md)
 - [`HANDOFF.md`](HANDOFF.md)

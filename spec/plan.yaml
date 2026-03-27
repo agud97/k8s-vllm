@@ -162,13 +162,13 @@ plan:
           validation: "The serving stack is actually deployed to the live cluster, becomes healthy within the acceptance window, and the workload schedules only on GPU-capable nodes."
         - id: task-4.3
           name: "Implement LiteLLM integration and public access"
-          description: "Deploy LiteLLM with pinned model aliases for `qwen-122b`, `minimax-m25`, `qwen-coder`, and `default`, using the current public-fallback OpenAI-compatible upstream endpoints for all three predictors, native API key auth, and NodePort-based public access."
-          artifact: "gitops/apps/litellm manifests and sealed secrets for API keys"
+          description: "Deploy LiteLLM with pinned model aliases for `qwen-122b`, `minimax-m25`, `qwen-coder`, and `default`, using the current public-fallback OpenAI-compatible upstream endpoints for all three predictors, native API key auth for inference, DB-backed internal `user/password` auth for the admin UI, and NodePort-based public access."
+          artifact: "gitops/apps/litellm manifests, database-backed LiteLLM UI auth manifests, bootstrap user-seeding scripts, and sealed secrets for auth inputs"
           depends_on:
             - task-4.2
             - task-3.2
             - task-3.4
-          validation: "LiteLLM is actually deployed to the live cluster, requests without valid API keys fail, valid requests route through LiteLLM, and the configured upstream contract matches the specification."
+          validation: "LiteLLM is actually deployed to the live cluster, requests without valid API keys fail, valid requests route through LiteLLM, the configured upstream contract matches the specification, the LiteLLM admin UI can be reached with the documented internal `user/password`, and the DB-backed auth path no longer fails with `DB not connected`."
         - id: task-4.4
           name: "Implement VictoriaMetrics stack"
           description: "Deploy VictoriaMetrics Kubernetes stack with 7-day retention, 100Gi persistent storage, the required metric targets and dashboards, explicit GPU telemetry collection for active GPU nodes, and datasource configuration aligned with the cluster DNS domain declared in inventory."
@@ -208,14 +208,14 @@ plan:
           validation: "Static checks run from the repository without cluster access and fail on malformed manifests, shell issues, floating versions, or cluster-DNS mismatches between inventory and GitOps manifests."
         - id: task-5.2
           name: "Implement smoke test suite"
-          description: "Create the repeatable smoke test for the pinned LiteLLM model alias using the documented prompt and acceptance thresholds."
+          description: "Create the repeatable smoke test for the pinned LiteLLM model alias using the documented prompt and acceptance thresholds, and document the operator validation steps for LiteLLM admin UI login."
           artifact: "tests/smoke-test.*"
           depends_on:
             - task-4.3
-          validation: "The smoke test is executed against the live deployment, returns HTTP 200, non-empty generated text, no runtime error, and completes within 60 seconds."
+          validation: "The smoke test is executed against the live deployment, returns HTTP 200, non-empty generated text, no runtime error, completes within 60 seconds, and the LiteLLM admin UI validation steps are documented for the live deployment."
         - id: task-5.3
           name: "Write operator runbook"
-          description: "Document bootstrap, local inputs, dependency matrix usage, validation commands, recovery for lab rebuilds, GPU node replacement and onboarding, and the sample smoke-test request and response."
+          description: "Document bootstrap, local inputs, dependency matrix usage, validation commands, LiteLLM admin UI login/bootstrap, recovery for lab rebuilds, GPU node replacement and onboarding, and the sample smoke-test request and response."
           artifact: "README.md and docs/runbooks/*"
           depends_on:
             - task-5.1
@@ -223,13 +223,13 @@ plan:
           validation: "Documentation contains step-by-step bootstrap instructions, verification commands, actual final endpoint details, and sample smoke-test artifacts without requiring screenshots."
         - id: task-5.4
           name: "Execute final end-to-end validation"
-          description: "Run the documented validation flow from bootstrap through post-deployment smoke tests and confirm all acceptance-facing artifacts are present."
+          description: "Run the documented validation flow from bootstrap through post-deployment smoke tests and LiteLLM admin UI login verification, and confirm all acceptance-facing artifacts are present."
           artifact: "Validated repository state and documented validation command set"
           depends_on:
             - task-5.1
             - task-5.2
             - task-5.3
-          validation: "All automated validations and smoke tests are actually executed against the live cluster and pass, and the repository contains every artifact required by the acceptance criteria."
+          validation: "All automated validations, smoke tests, and LiteLLM admin UI login validation are actually executed against the live cluster and pass, and the repository contains every artifact required by the acceptance criteria."
       checkpoint:
         description: "Review the completed implementation package before coding handoff is considered done."
         criteria:

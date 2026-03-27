@@ -38,7 +38,7 @@
 |------|--------|-------|
 | task-4.1 | → IN_PROGRESS | S3-backed serving has been retargeted from the retired two-model set to `Qwen/Qwen3.5-122B-A10B-FP8`, `MiniMaxAI/MiniMax-M2.5`, and `Qwen/Qwen3-Coder-Next`; `bootstrap/model-sync.sh` and artifact docs now match the new canonical prefixes |
 | task-4.2 | → IN_PROGRESS | KServe/vLLM serving is being migrated to the three-model `2+4+2` layout on `sxmgpu`; the shared runtime now encodes multi-GPU prerequisites such as `hostIPC`, larger `/dev/shm`, and fast safetensors loading |
-| task-4.3 | ✓ COMPLETE | LiteLLM is live on the public NodePort path with API-key auth; the active GitOps contract now exports `qwen-122b`, `minimax-m25`, `qwen-coder`, and `default` through public predictor upstreams on `sxmgpu` |
+| task-4.3 | ✓ COMPLETE | LiteLLM is live on the public NodePort path with API-key auth for inference and DB-backed internal `user/password` auth for the admin UI; the active GitOps contract now exports `qwen-122b`, `minimax-m25`, `qwen-coder`, and `default` through public predictor upstreams on `sxmgpu`, and the seeded UI admin user is stored in in-cluster Postgres |
 | task-4.4 | → IN_PROGRESS | VictoriaMetrics stack, extras, NVIDIA DCGM exporter, and LiteLLM Prometheus metrics are under live GitOps reconciliation; Grafana NodePort, datasource DNS alignment, and public GPU telemetry scrape fallback were fixed for the live `k8s-vllm-lab` cluster domain |
 | task-4.5 | · NOT_STARTED | Full live integration validation waits on healthy serving and observability convergence |
 
@@ -67,3 +67,4 @@
 - Approved live topology deviation on `2026-03-25`: retired `gpu-1` and `gpu-2` were replaced by one active GPU worker `sxmgpu` with `8x NVIDIA H200`; phase-1 model placement is temporarily co-located on the replacement node until another active GPU worker exists.
 - Observability delivery was split into a main `VictoriaMetrics` chart application plus a separate GitOps extras application so `VMServiceScrape` resources can reconcile after CRDs exist and the operator admission webhook is available.
 - Approved operational deviation on `2026-03-26`: because `sxmgpu` cannot route to the private `InternalIP` addresses advertised by the other nodes, serving and GPU telemetry currently use GitOps-managed public fallback endpoints rather than normal cross-node pod-network paths.
+- Approved implementation extension on `2026-03-27`: LiteLLM admin UI auth now uses an in-cluster Postgres backend and a seeded internal admin user so operators can log in by `user/password` instead of relying on the master key alone.

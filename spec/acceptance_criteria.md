@@ -72,6 +72,12 @@
 
 24b. WHEN the LiteLLM model configuration is inspected, THEN the configured models are reviewed, SHALL define pinned model aliases for `qwen-122b`, `minimax-m25`, and `qwen-coder`, and the default smoke test SHALL use `default`.
 
+24c. WHEN the LiteLLM admin UI is opened after deployment, THEN the operator logs in with the documented internal `email/password`, SHALL reach the UI successfully and SHALL not receive `Authentication Error, Not connected to DB!`.
+
+24d. WHEN the LiteLLM admin UI auth path is inspected after deployment, THEN the live cluster resources are reviewed, SHALL show a healthy in-cluster database backing LiteLLM internal users.
+
+24e. WHEN the documented LiteLLM UI bootstrap flow is executed, THEN the LiteLLM internal user-management API is inspected, SHALL show that the seeded admin user exists with the configured email and role.
+
 25. WHEN the selected `NodePort` on `infra-1` is blocked by firewall or provider networking, THEN external inference validation is executed, SHALL fail with an observable endpoint reachability error.
 
 ## Model Serving
@@ -122,6 +128,8 @@
 
 43. WHEN stateful in-cluster components requiring persistent volumes are deployed in the lab environment, THEN their storage classes are inspected, SHALL use OpenEBS LocalPV for persistent storage where configured in this environment.
 
+43a. WHEN LiteLLM admin UI auth persistence is enabled for the lab environment, THEN the backing Postgres workload is inspected, SHALL use OpenEBS LocalPV for its persistent volume.
+
 44. WHEN the VictoriaMetrics stack is deployed, THEN its persistent volume claims are inspected, SHALL request 100Gi of persistent storage.
 
 45. WHEN the Sealed Secrets key management approach is inspected for the lab environment, THEN the bootstrap and recovery documentation are reviewed, SHALL preserve the reusable Sealed Secrets key material outside Git for cluster rebuild.
@@ -163,6 +171,8 @@
 57a. WHEN the final documentation is reviewed for recovery coverage, THEN it SHALL include a GPU node replacement runbook covering worker join, Cilium recovery, NVIDIA runtime recovery, and stale-node removal.
 
 57b. WHEN the final documentation is reviewed for repeatability, THEN it SHALL explain the difference between public-IP worker join and private-IP east-west cluster reachability, and SHALL document the active public-fallback serving topology plus the model alias contract exported through LiteLLM.
+
+57c. WHEN the final documentation is reviewed for operator access, THEN it SHALL document the LiteLLM admin UI URL, the DB-backed login flow, required local variables, and the command that seeds or updates the admin user.
 
 58. WHEN the final documentation is reviewed, THEN it SHALL include a sample LiteLLM smoke-test request and a sample successful response.
 
