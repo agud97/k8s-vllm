@@ -37,11 +37,18 @@ spec:
           memory: "64Gi"
       args:
         - --served-model-name=qwen-122b
-        - --tensor-parallel-size=2
-        - --max-model-len=16384
-        - --gpu-memory-utilization=0.85
-        - --max-num-seqs=16
-        - --enforce-eager
-        - --reasoning-parser=qwen3
-        - --language-model-only
+        - --chat-template-content-format=auto
         - --dtype=auto
+        - --tensor-parallel-size=2
+        - --max-model-len=524288
+        - --max-num-seqs=128
+        - --max-num-batched-tokens=16384
+        - --reasoning-parser=qwen3
+        - --tool-call-parser=qwen3_coder
+        - --enable-auto-tool-choice
+        - --enable-prefix-caching
+        - '--default-chat-template-kwargs={"enable_thinking":false}'
+        - --language-model-only
+        - '--hf-overrides={"text_config":{"rope_parameters":{"mrope_interleaved":true,"mrope_section":[11,11,10],"rope_type":"yarn","rope_theta":10000000,"partial_rotary_factor":0.25,"factor":2.0,"original_max_position_embeddings":262144}}}'
+        - --trust-remote-code
+        - --gpu-memory-utilization=0.9
